@@ -48,6 +48,13 @@ the release boundaries defined in PLAN.md §21.
 - OS-level `cii` command documented and verified on CachyOS:
   `uv tool install --editable .` installs `cii` into `~/.local/bin`
   (verified: `cii --version` / `init` / `status` from a clean login shell).
+- **Global OpenCode integration** (verified live, OpenCode v2.2.5):
+  `opencode mcp add cii --global -- cii mcp` registers one auto-discovering
+  server for all projects (degrades gracefully in un-indexed directories);
+  the `codebase-integrity` skill and the hardened read-only
+  `codebase-auditor` subagent install globally; CII rules go into the global
+  `AGENTS.md` (hot-reloads); the primary agent delegates integrity audits to
+  the auditor subagent via the `subagent` tool.
 
 ## [0.11.0] — 2026-11-07
 

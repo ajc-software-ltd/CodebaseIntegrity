@@ -5,6 +5,56 @@ and never edits existing OpenCode configuration — the installer prints a
 **proposed** snippet (`cii opencode-config`) and this page explains where it
 belongs; you apply it yourself.
 
+## Global setup (all projects, all agents)
+
+Everything below is optional per-project; this section installs CII for
+**every** OpenCode session on the machine. Verified live against OpenCode
+v2.2.5.
+
+1. **OS-level command** — `uv tool install --editable .` (see README), so
+   `cii` resolves from any directory.
+
+2. **Global MCP registration** — one entry serves every project because the
+   server auto-discovers the nearest `.cii/` from its working directory
+   (local MCP servers start in the workspace), and degrades gracefully in
+   un-indexed directories (tools answer "run cii init"):
+
+   ```bash
+   opencode mcp add cii --global -- cii mcp
+   ```
+
+   Verify: `opencode mcp list` shows `✓ cii connected` in any directory.
+
+3. **Global skill** — so any agent can load the workflow on demand:
+
+   ```bash
+   cp -r integrations/opencode/skills/codebase-integrity ~/.config/opencode/skills/
+   ```
+
+4. **Global read-only auditor subagent** — launchable by the primary agent
+   (via the `subagent` tool) after substantial changes or when validation
+   reports findings. Its permissions deny-all-first and allow only read-only
+   capabilities, so mutation tools (`index_scan`/`index_rebuild`) are
+   structurally impossible for it:
+
+   ```bash
+   cp integrations/opencode/agents/codebase-auditor.md ~/.config/opencode/agents/
+   ```
+
+5. **Global instructions** — add the CII rules (from
+   `integrations/opencode/AGENTS.md`) to `~/.config/opencode/AGENTS.md`, so
+   every session in an indexed project follows Structural Discovery / Source
+   Verification / Duplicate Prevention / Post-Development / Failure discipline.
+   AGENTS.md edits hot-reload into running sessions.
+
+6. **Primary agent delegation** — tell your primary agent (e.g. in its agent
+   file) to delegate independent integrity audits to the `codebase-auditor`
+   subagent at appropriate times (post-change verification, before completion
+   reports, when `index_validate` reports errors).
+
+The MCP server's own `instructions` are injected into every session's system
+prompt automatically, so the basic workflow survives even without the skill.
+
 ## 1. Register the MCP server
 
 CII exposes its tools through a local MCP server on stdio (`cii mcp`).
