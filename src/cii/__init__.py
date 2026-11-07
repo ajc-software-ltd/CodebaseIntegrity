@@ -5,7 +5,7 @@ AI coding agents a persistent, verified representation of what a codebase
 actually contains.
 """
 
-__version__ = "0.9.0"
+__version__ = "0.10.0"
 
 #: Version of the generated structural index format (PLAN.md §5.2).
 INDEX_VERSION = "1.0"

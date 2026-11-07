@@ -1,11 +1,13 @@
 """CII command-line interface.
 
 The CLI operates independently of OpenCode (PLAN.md §13). Milestone 01 shipped
-the entry point and foundation commands; Milestone 02 adds database creation,
-project registration and index status. Scan, search and the remaining commands
-arrive with their subsystems in later milestones.
+the entry point and foundation commands; Milestone 02 added database support,
+M05 the scan/export pipeline, M06 validation, M07 watch, M08 search, and M09
+the MCP server, rebuild and statistics commands.
 """
 
+import json
+import sys
 from pathlib import Path
 from typing import Annotated
 
@@ -598,6 +600,57 @@ def mcp_command(
             )
             raise typer.Exit(code=1)
         serve(project_root)
+    except CiiError as error:
+        typer.secho(f"error: {error}", fg="red", err=True)
+        raise typer.Exit(code=1) from error
+
+
+@app.command("opencode-config")
+def opencode_config_command(
+    root: _ROOT_OPTION = Path("."),
+    as_json: _JSON_OPTION = False,
+) -> None:
+    """Generate a proposed OpenCode v2 MCP configuration snippet.
+
+    Prints the snippet and explains where it belongs; it never edits any
+    OpenCode configuration itself.
+    """
+    try:
+        project_root = resolve_project_root(root)
+        python = sys.executable
+        snippet = {
+            "$schema": "https://opencode.ai/config.json",
+            "mcp": {
+                "servers": {
+                    "cii": {
+                        "type": "local",
+                        "command": [python, "-m", "cii", "mcp", "--root", str(project_root)],
+                        "enabled": True,
+                        "timeout": 30000,
+                    }
+                }
+            },
+        }
+        placement = (
+            "Place this snippet in the project-level configuration of the project "
+            "you want indexed: opencode.json or .opencode/opencode.json in that "
+            "project's root. CII never edits OpenCode configuration for you. "
+            "Run 'cii init' in the project first. Configuration changes apply "
+            "without restarting OpenCode."
+        )
+        if as_json:
+            typer.echo(to_json({"snippet": snippet, "placement": placement}))
+            return
+        typer.echo("# Proposed OpenCode v2 MCP registration for CII")
+        typer.echo("#")
+        typer.echo("# " + placement)
+        typer.echo("#")
+        typer.echo("# Alternative launcher using the 'cii' script from the same")
+        typer.echo("# environment (do not assume a global cii executable exists):")
+        typer.echo(f'#   "command": ["{Path(python).parent / "cii"}", "mcp", '
+                   f'"--root", "{project_root}"]')
+        typer.echo("")
+        typer.echo(json.dumps(snippet, indent=2))
     except CiiError as error:
         typer.secho(f"error: {error}", fg="red", err=True)
         raise typer.Exit(code=1) from error

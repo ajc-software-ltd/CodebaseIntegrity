@@ -2297,7 +2297,7 @@ their acceptance criteria have been executed and passed.
 | M07 — Incremental Monitoring | 0.7.0 | **COMPLETE** (2026-11-07) | Live watcher reflected concurrent add+delete automatically (clean-venv run verified); 281 tests pass incl. live inotify test; ruff clean |
 | M08 — Search and Retrieval | 0.8.0 | **COMPLETE** (2026-11-07) | §11.2 example reproduced (3 implementations located, paginated, clean-venv); 301 tests pass; ruff clean |
 | M09 — MCP Server | 0.9.0 | **COMPLETE** (2026-11-07) | External MCP client connected via stdio and used all 9 tools + 5 resources (clean-venv run verified); 328 tests pass; ruff clean |
-| M10 — OpenCode Integration | 0.10.0 | pending | |
+| M10 — OpenCode Integration | 0.10.0 | **COMPLETE** (2026-11-07) | Live OpenCode v2.2.5: server connected, tools discovered, MiMo workflow executed end-to-end (skill → status → scan → search → source); 337 tests pass; ruff clean |
 | M11 — Automation Plugin | 0.11.0 | pending | |
 | M12 — Reliability and Release | 1.0.0 | pending | |
 

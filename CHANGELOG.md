@@ -4,6 +4,38 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [0.10.0] — 2026-11-07
+
+### Added — Milestone 10: OpenCode Integration
+
+- OpenCode v2 skill (`integrations/opencode/skills/codebase-integrity/SKILL.md`):
+  the 10-step §15.2 workflow (check status → search before creating →
+  retrieve source → avoid duplicates → refresh → validate → report honestly),
+  loadable on demand.
+- Integration instructions (`integrations/opencode/AGENTS.md`) with the six
+  §15.3 rules: Structural Discovery, Source Verification, Duplicate
+  Prevention, Index Integrity, Post-Development, Failure.
+- Read-only `codebase-auditor` subagent
+  (`integrations/opencode/agents/codebase-auditor.md`): permissions deny
+  edit/write/shell; covers the eight §15.4 responsibilities.
+- `cii opencode-config`: installer command generating the proposed OpenCode v2
+  MCP registration snippet with resolved paths (python `-m cii` launcher;
+  no global-executable assumption) plus placement explanation — it never
+  edits OpenCode configuration itself.
+- `docs/OPENCode_INTEGRATION.md`: complete install/verify guide with the
+  verified `mcp.servers` v2 snippet.
+
+### Verified (live, OpenCode v2.2.5)
+
+- `opencode mcp list` shows the `cii` server **connected** from project-level
+  config (both `opencode.json` and `.opencode/opencode.json` placements).
+- Tool discovery and the MiMo development workflow proven end-to-end in a
+  headless `opencode run` session: the agent loaded the `codebase-integrity`
+  skill, called `index_status` → `index_scan` → `index_search`, retrieved the
+  correct source file, and reported integrity without modifying anything.
+- No user OpenCode configuration was modified (verification ran in a temp
+  project directory).
+
 ## [0.9.0] — 2026-11-07
 
 ### Added — Milestone 09: MCP Server
