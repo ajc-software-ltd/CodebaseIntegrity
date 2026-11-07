@@ -4,6 +4,40 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [0.11.0] — 2026-11-07
+
+### Added — Milestone 11: Automation and Plugin
+
+- Optional OpenCode v2 plugin (`integrations/opencode/plugin/cii.ts` +
+  README), built strictly on documented V2 APIs (`Plugin.define`, 
+  `tool.hook("execute.before"/"execute.after")`, `session.hook("context")`,
+  `tool.transform`, `command.transform`) — no undocumented internals.
+- Detects development operations (edit/write/patch executions) and remembers
+  changed files; contextual integrity reminders are injected into the model
+  context while files await reindexing and cleared on `index_scan`/
+  `index_rebuild`.
+- Read-only `cii_status` tool and `/cii-audit` command that communicate with
+  the standalone CII application **through the CLI only** — the plugin is not
+  a second indexing engine and the MCP server remains fully operational
+  without it (M09 acceptance runs had no plugin).
+- Failure handling: 30 s CLI timeouts, guarded hook/registration setup,
+  informative degradation when CII is missing — never breaks the session.
+- Configurable launcher (`options.command`) for environments where `cii` is
+  not on the service's PATH; `options.reminders` toggles the reminder hook.
+
+### Verified (live, OpenCode v2.2.5)
+
+- Plugin loads from `.opencode/plugins/` and via config with options.
+- `cii_status` returns real index status through the CLI.
+- Missing-CLI failure path degrades gracefully (verified accidentally, then
+  intentionally).
+- Contextual reminder verified: after a write-tool edit, the next model
+  request carried the injected "CII integrity reminder" naming the exact file.
+- `/cii-audit` registration is pinned by tests; headless slash-command
+  dispatch was not observed (`opencode run` treats `/cmd` as prompt text —
+  dispatch is the TUI's command facility). Its executor shares the proven
+  `runCii` code path.
+
 ## [0.10.0] — 2026-11-07
 
 ### Added — Milestone 10: OpenCode Integration

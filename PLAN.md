@@ -2298,7 +2298,7 @@ their acceptance criteria have been executed and passed.
 | M08 — Search and Retrieval | 0.8.0 | **COMPLETE** (2026-11-07) | §11.2 example reproduced (3 implementations located, paginated, clean-venv); 301 tests pass; ruff clean |
 | M09 — MCP Server | 0.9.0 | **COMPLETE** (2026-11-07) | External MCP client connected via stdio and used all 9 tools + 5 resources (clean-venv run verified); 328 tests pass; ruff clean |
 | M10 — OpenCode Integration | 0.10.0 | **COMPLETE** (2026-11-07) | Live OpenCode v2.2.5: server connected, tools discovered, MiMo workflow executed end-to-end (skill → status → scan → search → source); 337 tests pass; ruff clean |
-| M11 — Automation Plugin | 0.11.0 | pending | |
+| M11 — Automation Plugin | 0.11.0 | **COMPLETE** (2026-11-07) | Live plugin: cii_status tool + injected reminders verified; failure handling verified; MCP independence retained; 343 tests pass; ruff clean |
 | M12 — Reliability and Release | 1.0.0 | pending | |
 
 ## 26.1 Resolved specification ambiguities
@@ -2353,6 +2353,11 @@ Decisions taken where the specification left implementation details open:
     errors. `index_scan` executes synchronously (decision 3). The server uses
     the official SDK v2 (`MCPServer`); tool handlers run on worker threads and
     database access is serialised by a reentrant lock.
+16. **Plugin scope** (§15.5): the plugin uses only documented V2 hooks and
+    reaches CII through the CLI; it is never a second indexing engine. Plugin
+    command dispatch (`/cii-audit`) relies on OpenCode's TUI command facility —
+    registration and executor are tested, headless dispatch is not observable
+    via `opencode run`.
 
 ---
 

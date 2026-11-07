@@ -82,7 +82,8 @@ Milestone progress is tracked in PLAN.md §21 and the CHANGELOG.
 | M08 | Search & retrieval (symbols, files, relationships, pagination) | done |
 | M09 | MCP server (9 tools, 5 resources, stdio) | done |
 | M10 | OpenCode integration (skill, auditor, config, live verification) | done |
-| M11–M12 | Automation plugin → 1.0 release | pending |
+| M11 | Automation plugin (hooks, reminders, status tool, failure handling) | done |
+| M12 | Reliability and 1.0 release | pending |
 
 ## License
 
