@@ -2295,7 +2295,7 @@ their acceptance criteria have been executed and passed.
 | M05 — Structural Indexer | 0.5.0 | **COMPLETE** (2026-11-07) | Complete structural index generated from DB on multi-language project (clean-venv run verified); 224 tests pass; ruff clean |
 | M06 — Integrity Engine | 0.6.0 | **COMPLETE** (2026-11-07) | Discrepancies identified (unindexed/missing/changed/renamed/duplicates) with records provably uncorrupted (clean-venv run verified); 256 tests pass; ruff clean |
 | M07 — Incremental Monitoring | 0.7.0 | **COMPLETE** (2026-11-07) | Live watcher reflected concurrent add+delete automatically (clean-venv run verified); 281 tests pass incl. live inotify test; ruff clean |
-| M08 — Search and Retrieval | 0.8.0 | pending | |
+| M08 — Search and Retrieval | 0.8.0 | **COMPLETE** (2026-11-07) | §11.2 example reproduced (3 implementations located, paginated, clean-venv); 301 tests pass; ruff clean |
 | M09 — MCP Server | 0.9.0 | pending | |
 | M10 — OpenCode Integration | 0.10.0 | pending | |
 | M11 — Automation Plugin | 0.11.0 | pending | |
@@ -2344,6 +2344,9 @@ Decisions taken where the specification left implementation details open:
     = WARNING; Python duplicates are compared within files only (file-local
     FQNs). Integrity status precedence: ERROR > INCOMPLETE > STALE > WARNING >
     HEALTHY (FAILED when validation itself cannot complete).
+14. **Namespace attribution in search results** (§11.3): derived from the
+    file's namespace declarations as the longest fully qualified prefix of the
+    symbol name — the `symbols` table keeps exactly the §6.2 field set.
 
 ---
 

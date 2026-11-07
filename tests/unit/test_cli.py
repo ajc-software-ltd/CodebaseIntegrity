@@ -144,3 +144,37 @@ class TestStatus:
         assert result.exit_code == 0
         assert "Index:        v1.0" in result.stdout
         assert "Files:        0 indexed" in result.stdout
+
+
+class TestSearchCommand:
+    def test_search_human_and_json(self, project_root: Path) -> None:
+        assert runner.invoke(app, ["init", "--root", str(project_root)]).exit_code == 0
+        (project_root / "a.py").write_text("class Widget:\n    def render(self):\n        pass\n")
+        assert runner.invoke(app, ["scan", "--root", str(project_root)]).exit_code == 0
+
+        result = runner.invoke(app, ["search", "render", "--root", str(project_root)])
+        assert result.exit_code == 0
+        assert "RESULTS: 1" in result.stdout
+        assert "method: Widget.render" in result.stdout
+
+        result = runner.invoke(
+            app, ["search", "render", "--root", str(project_root), "--expanded", "--json"]
+        )
+        payload = json.loads(result.stdout)
+        assert payload["total"] == 1
+        assert payload["results"][0]["signature"] is not None
+
+    def test_file_command(self, project_root: Path) -> None:
+        assert runner.invoke(app, ["init", "--root", str(project_root)]).exit_code == 0
+        (project_root / "a.py").write_text("class Widget:\n    def render(self):\n        pass\n")
+        assert runner.invoke(app, ["scan", "--root", str(project_root)]).exit_code == 0
+        result = runner.invoke(app, ["file", "a.py", "--root", str(project_root)])
+        assert result.exit_code == 0
+        assert "FILE: a.py" in result.stdout
+        assert "METHODS:" in result.stdout
+        assert "Widget:" in result.stdout
+
+    def test_file_not_indexed(self, project_root: Path) -> None:
+        assert runner.invoke(app, ["init", "--root", str(project_root)]).exit_code == 0
+        result = runner.invoke(app, ["file", "missing.py", "--root", str(project_root)])
+        assert result.exit_code == 1

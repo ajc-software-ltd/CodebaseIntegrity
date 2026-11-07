@@ -26,6 +26,7 @@ from cii.database.database import DATABASE_FILE_NAME, Database
 from cii.database.repositories import FileRepository, ProjectRepository, SymbolRepository
 from cii.integrity.validator import Validator
 from cii.monitoring.watcher import ProjectWatcher
+from cii.search.symbol_search import file_structure, search_symbols
 from cii.utilities.logging import setup_logging
 from cii.utilities.paths import cii_data_dir, resolve_project_root
 
@@ -339,6 +340,128 @@ def validate_command(
             location = f" [{finding.file_path}]" if finding.file_path else ""
             typer.echo(f"  {finding.severity.value.upper()} {finding.code}{location}")
             typer.echo(f"    {finding.message}")
+    except CiiError as error:
+        typer.secho(f"error: {error}", fg="red", err=True)
+        raise typer.Exit(code=1) from error
+
+
+@app.command("search")
+def search_command(
+    query: Annotated[str, typer.Argument(help="Symbol name or fragment to locate.")],
+    root: _ROOT_OPTION = Path("."),
+    symbol_type: Annotated[
+        str | None,
+        typer.Option("--type", help="Filter by symbol type (class, method, …)."),
+    ] = None,
+    language: Annotated[
+        str | None,
+        typer.Option("--language", help="Filter by language (cpp, csharp, …)."),
+    ] = None,
+    limit: Annotated[int, typer.Option("--limit", help="Maximum results.")] = 20,
+    offset: Annotated[int, typer.Option("--offset", help="Skip the first N results.")] = 0,
+    expanded: Annotated[
+        bool,
+        typer.Option("--expanded", help="Include signatures, lines and freshness."),
+    ] = False,
+    as_json: _JSON_OPTION = False,
+) -> None:
+    """Search indexed symbols without loading the whole index."""
+    try:
+        project_root = resolve_project_root(root)
+        with Application.open(project_root) as application:
+            project = ProjectRepository(application.database.connection).get_by_root(
+                str(project_root)
+            )
+            if project is None:
+                typer.secho("error: project not registered (run 'cii init')", fg="red",
+                            err=True)
+                raise typer.Exit(code=1)
+            page = search_symbols(
+                application.database,
+                project.project_id,
+                query,
+                symbol_type=symbol_type,
+                language=language,
+                limit=limit,
+                offset=offset,
+                expanded=expanded,
+            )
+        if as_json:
+            typer.echo(to_json(page.model_dump(mode="json")))
+            return
+        typer.echo(f"RESULTS: {page.total} (showing {len(page.results)})")
+        for hit in page.results:
+            typer.echo("")
+            typer.echo(hit.file_path)
+            typer.echo(f"    {hit.symbol_type}: {hit.fully_qualified_name}")
+            if hit.parent:
+                typer.echo(f"    parent: {hit.parent}")
+            if hit.namespace:
+                typer.echo(f"    namespace: {hit.namespace}")
+            if expanded:
+                if hit.signature:
+                    typer.echo(f"    signature: {hit.signature}")
+                typer.echo(f"    lines: {hit.start_line}-{hit.end_line}")
+    except CiiError as error:
+        typer.secho(f"error: {error}", fg="red", err=True)
+        raise typer.Exit(code=1) from error
+
+
+@app.command("file")
+def file_command(
+    path: Annotated[str, typer.Argument(help="Project-relative file path.")],
+    root: _ROOT_OPTION = Path("."),
+    as_json: _JSON_OPTION = False,
+) -> None:
+    """Display a file's structural index."""
+    try:
+        project_root = resolve_project_root(root)
+        with Application.open(project_root) as application:
+            project = ProjectRepository(application.database.connection).get_by_root(
+                str(project_root)
+            )
+            if project is None:
+                typer.secho("error: project not registered (run 'cii init')", fg="red",
+                            err=True)
+                raise typer.Exit(code=1)
+            structure = file_structure(application.database, project.project_id, path)
+        if structure is None:
+            typer.secho(f"error: file not indexed: {path}", fg="red", err=True)
+            raise typer.Exit(code=1)
+        if as_json:
+            typer.echo(to_json(structure.model_dump(mode="json")))
+            return
+        typer.echo(f"FILE: {structure.file_path}")
+        typer.echo("")
+        typer.echo(f"LANGUAGE: {structure.language}")
+        typer.echo("")
+        counts = structure.counts
+        typer.echo(f"NAMESPACES: {counts.namespaces}")
+        typer.echo(f"CLASSES: {counts.classes}")
+        typer.echo(f"FUNCTIONS: {counts.functions}")
+        typer.echo(f"METHODS: {counts.methods}")
+        if structure.namespaces:
+            typer.echo("")
+            typer.echo("NAMESPACE:")
+            for name in structure.namespaces:
+                typer.echo(f"    {name}")
+        methods: dict[str, list[str]] = {}
+        for symbol in structure.symbols:
+            if symbol.symbol_type in ("method", "constructor", "destructor"):
+                methods.setdefault(symbol.parent or "<global>", []).append(symbol.name)
+        if methods:
+            typer.echo("")
+            typer.echo("METHODS:")
+            for parent in sorted(methods):
+                typer.echo(f"    {parent}:")
+                for name in methods[parent]:
+                    typer.echo(f"        {name}")
+        functions = [s for s in structure.symbols if s.symbol_type == "function"]
+        if functions:
+            typer.echo("")
+            typer.echo("FUNCTIONS:")
+            for symbol in functions:
+                typer.echo(f"    {symbol.name}")
     except CiiError as error:
         typer.secho(f"error: {error}", fg="red", err=True)
         raise typer.Exit(code=1) from error

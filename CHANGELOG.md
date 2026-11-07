@@ -4,6 +4,30 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [0.8.0] — 2026-11-07
+
+### Added — Milestone 08: Search and Retrieval
+
+- Symbol search (PLAN.md §11): name/FQN matching (exact ranks before
+  substring), type and language filters, deterministic ordering, full
+  pagination (`total`/`offset`/`limit`), concise results by default with
+  optional expanded detail (signature, lines, freshness).
+- Namespace attribution derived from recorded namespace declarations (longest
+  FQN prefix) — schema stays as specified in §6.2.
+- Namespace search and file search (filename/path fragment, language filter,
+  pagination).
+- Relationship queries: both directions for a symbol, optional type filter,
+  evidence-backed results only (MCP `index_dependencies` shape).
+- File structural overview (MCP `index_file` shape): counts, namespaces,
+  symbols ordered by line, methods grouped by parent.
+- CLI: `cii search` (`--type`, `--language`, `--limit`, `--offset`,
+  `--expanded`, `--json`) and `cii file` (human + `--json`).
+
+### Fixed
+
+- `FileSearchHit` construction mismatched `scan_status`/`file_status` field
+  names (runtime ValidationError) — caught by tests.
+
 ## [0.7.0] — 2026-11-07
 
 ### Added — Milestone 07: Incremental Monitoring

@@ -79,7 +79,8 @@ Milestone progress is tracked in PLAN.md §21 and the CHANGELOG.
 | M05 | Structural indexer (symbols, relationships, Markdown export) | done |
 | M06 | Integrity engine (validation, duplicates, reconciliation) | done |
 | M07 | Incremental monitoring (watcher, debounce, recovery) | done |
-| M08–M12 | Search & retrieval → 1.0 release | pending |
+| M08 | Search & retrieval (symbols, files, relationships, pagination) | done |
+| M09–M12 | MCP server → 1.0 release | pending |
 
 ## License
 
