@@ -113,6 +113,19 @@ class OutputSettings(BaseModel):
     commit_index: bool = False
 
 
+class MonitorSettings(BaseModel):
+    """Filesystem monitoring settings (PLAN.md §9.2)."""
+
+    model_config = {"extra": "forbid"}
+
+    # Quiet period after the last event before a batch is processed.
+    debounce_seconds: float = Field(default=0.5, gt=0)
+    # Maximum time a continuously-changing batch may be held back.
+    max_debounce_seconds: float = Field(default=5.0, gt=0)
+    # Periodic reconciliation interval (recovery from missed events).
+    reconcile_interval_seconds: float = Field(default=300.0, gt=0)
+
+
 class LoggingSettings(BaseModel):
     """Logging settings."""
 
@@ -132,6 +145,7 @@ class CiiConfig(BaseModel):
     scan: ScanSettings = Field(default_factory=ScanSettings)
     languages: LanguageSettings = Field(default_factory=LanguageSettings)
     output: OutputSettings = Field(default_factory=OutputSettings)
+    monitor: MonitorSettings = Field(default_factory=MonitorSettings)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
 
     @classmethod

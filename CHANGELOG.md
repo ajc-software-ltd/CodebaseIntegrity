@@ -4,6 +4,30 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [0.7.0] — 2026-11-07
+
+### Added — Milestone 07: Incremental Monitoring
+
+- Filesystem watcher (`watchfiles` inotify, config-driven directory
+  exclusions) with injectable event source for deterministic tests.
+- Debounce buffer: quiesce-based batching with a max-hold cap so busy writers
+  cannot starve indexing (PLAN.md §9.2).
+- Event processor: filters temporary/editor artefacts and out-of-project
+  paths, triggers incremental rescans (hash fast-path skips unchanged files),
+  skips scanning entirely for irrelevant batches.
+- Periodic reconciliation (configurable interval) recovers from missed
+  filesystem events (§18.3); startup behaviour per §9.3 (reconcile-first scan,
+  no automatic full rebuild).
+- New `[monitor]` configuration section (`debounce_seconds`,
+  `max_debounce_seconds`, `reconcile_interval_seconds`).
+- CLI: `cii watch [--max-seconds N]`.
+- Live inotify integration test plus deterministic synthetic-source tests.
+
+### Fixed
+
+- Debounce buffer treated timestamp `0.0` as absent (falsy-zero bug) which
+  disabled the max-hold path — caught by unit test.
+
 ## [0.6.0] — 2026-11-07
 
 ### Added — Milestone 06: Integrity Engine

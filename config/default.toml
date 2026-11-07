@@ -37,6 +37,14 @@ split_by_language = false
 # Whether the generated Markdown index may be committed to version control.
 commit_index = false
 
+[monitor]
+# Quiet period after the last filesystem event before a batch is processed.
+debounce_seconds = 0.5
+# Maximum time a continuously-changing batch may be held back.
+max_debounce_seconds = 5.0
+# Periodic reconciliation interval (recovery from missed filesystem events).
+reconcile_interval_seconds = 300.0
+
 [logging]
 # Minimum log level: DEBUG, INFO, WARNING, ERROR, CRITICAL.
 level = "INFO"

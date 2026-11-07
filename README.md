@@ -78,7 +78,8 @@ Milestone progress is tracked in PLAN.md §21 and the CHANGELOG.
 | M04 | Parser engine (C, C++, C#, Python extraction) | done |
 | M05 | Structural indexer (symbols, relationships, Markdown export) | done |
 | M06 | Integrity engine (validation, duplicates, reconciliation) | done |
-| M07–M12 | Incremental monitoring → 1.0 release | pending |
+| M07 | Incremental monitoring (watcher, debounce, recovery) | done |
+| M08–M12 | Search & retrieval → 1.0 release | pending |
 
 ## License
 

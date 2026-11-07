@@ -25,6 +25,7 @@ from cii.core.exceptions import CiiError
 from cii.database.database import DATABASE_FILE_NAME, Database
 from cii.database.repositories import FileRepository, ProjectRepository, SymbolRepository
 from cii.integrity.validator import Validator
+from cii.monitoring.watcher import ProjectWatcher
 from cii.utilities.logging import setup_logging
 from cii.utilities.paths import cii_data_dir, resolve_project_root
 
@@ -338,6 +339,48 @@ def validate_command(
             location = f" [{finding.file_path}]" if finding.file_path else ""
             typer.echo(f"  {finding.severity.value.upper()} {finding.code}{location}")
             typer.echo(f"    {finding.message}")
+    except CiiError as error:
+        typer.secho(f"error: {error}", fg="red", err=True)
+        raise typer.Exit(code=1) from error
+
+
+@app.command("watch")
+def watch_command(
+    root: _ROOT_OPTION = Path("."),
+    max_seconds: Annotated[
+        float | None,
+        typer.Option("--max-seconds", help="Stop after N seconds (default: run until Ctrl+C)."),
+    ] = None,
+    as_json: _JSON_OPTION = False,
+) -> None:
+    """Watch the project and keep the index current automatically."""
+    try:
+        project_root = resolve_project_root(root)
+        db_path = cii_data_dir(project_root) / DATABASE_FILE_NAME
+        if not db_path.is_file():
+            typer.secho(
+                f"error: CII is not initialised in {project_root} (run 'cii init')",
+                fg="red",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        with Application.open(project_root, configure_logging=True) as application:
+            watcher = ProjectWatcher(application, application.config)
+            typer.echo(f"Watching {project_root} (Ctrl+C to stop)")
+            try:
+                summary = watcher.run(max_seconds=max_seconds)
+            except KeyboardInterrupt:
+                typer.echo("stopped")
+                raise typer.Exit(code=0) from None
+        payload = summary.model_dump(mode="json")
+        if as_json:
+            typer.echo(to_json(payload))
+            return
+        typer.echo(
+            f"done: {summary.scans_triggered} scan(s), "
+            f"{summary.batches_processed} event batch(es), "
+            f"{summary.reconciliations} reconciliation(s)"
+        )
     except CiiError as error:
         typer.secho(f"error: {error}", fg="red", err=True)
         raise typer.Exit(code=1) from error

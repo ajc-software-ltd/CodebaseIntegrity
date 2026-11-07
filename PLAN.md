@@ -2294,7 +2294,7 @@ their acceptance criteria have been executed and passed.
 | M04 — Parser Engine | 0.4.0 | **COMPLETE** (2026-11-07) | Representative C++, C, C#, Python projects extracted accurately (clean-venv run verified); 198 tests pass; ruff clean |
 | M05 — Structural Indexer | 0.5.0 | **COMPLETE** (2026-11-07) | Complete structural index generated from DB on multi-language project (clean-venv run verified); 224 tests pass; ruff clean |
 | M06 — Integrity Engine | 0.6.0 | **COMPLETE** (2026-11-07) | Discrepancies identified (unindexed/missing/changed/renamed/duplicates) with records provably uncorrupted (clean-venv run verified); 256 tests pass; ruff clean |
-| M07 — Incremental Monitoring | 0.7.0 | pending | |
+| M07 — Incremental Monitoring | 0.7.0 | **COMPLETE** (2026-11-07) | Live watcher reflected concurrent add+delete automatically (clean-venv run verified); 281 tests pass incl. live inotify test; ruff clean |
 | M08 — Search and Retrieval | 0.8.0 | pending | |
 | M09 — MCP Server | 0.9.0 | pending | |
 | M10 — OpenCode Integration | 0.10.0 | pending | |

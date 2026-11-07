@@ -11,6 +11,7 @@ dependencies = [
     "tree-sitter-c>=0.23",
     "tree-sitter-cpp>=0.23",
     "tree-sitter-c-sharp>=0.23",
+    "watchfiles>=1.0",
 ]
 
 [project.scripts]
@@ -34,6 +35,9 @@ packages = ["src/cii"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "integration: tests exercising live OS facilities (inotify, timing)",
+]
 
 [tool.ruff]
 line-length = 100
