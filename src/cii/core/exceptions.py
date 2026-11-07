@@ -24,3 +24,11 @@ class PathSecurityError(CiiError, ValueError):
     Also a :class:`ValueError` so Pydantic field validators can raise it and
     get standard ``ValidationError`` handling at model boundaries.
     """
+
+
+class DatabaseError(CiiError):
+    """The database could not be opened or is unusable."""
+
+
+class MigrationError(CiiError):
+    """A schema migration could not be applied."""

@@ -27,6 +27,14 @@ class TestInit:
         assert (project_root / ".cii" / "logs").is_dir()
         assert "CII initialised" in result.stdout
 
+    def test_creates_database_and_registers_project(self, project_root: Path) -> None:
+        result = runner.invoke(app, ["init", "--root", str(project_root), "--json"])
+        assert result.exit_code == 0
+        payload = json.loads(result.stdout)
+        assert payload["database_healthy"] is True
+        assert payload["project_id"]
+        assert (project_root / ".cii" / "cii.db").is_file()
+
     def test_json_output(self, project_root: Path) -> None:
         result = runner.invoke(app, ["init", "--root", str(project_root), "--json"])
         assert result.exit_code == 0
@@ -77,3 +85,28 @@ class TestConfig:
         result = runner.invoke(app, ["config", "--root", str(project_root)])
         assert result.exit_code == 1
         assert "error:" in result.output
+
+
+class TestStatus:
+    def test_status_without_init_fails(self, project_root: Path) -> None:
+        result = runner.invoke(app, ["status", "--root", str(project_root)])
+        assert result.exit_code == 1
+        combined = result.output + (getattr(result, "stderr", "") or "")
+        assert "not initialised" in combined
+
+    def test_status_after_init(self, project_root: Path) -> None:
+        assert runner.invoke(app, ["init", "--root", str(project_root)]).exit_code == 0
+        result = runner.invoke(app, ["status", "--root", str(project_root), "--json"])
+        assert result.exit_code == 0
+        payload = json.loads(result.stdout)
+        assert payload["database_healthy"] is True
+        assert payload["indexed_files"] == 0
+        assert payload["indexed_symbols"] == 0
+        assert payload["last_scan"] is None
+
+    def test_status_human_output(self, project_root: Path) -> None:
+        assert runner.invoke(app, ["init", "--root", str(project_root)]).exit_code == 0
+        result = runner.invoke(app, ["status", "--root", str(project_root)])
+        assert result.exit_code == 0
+        assert "Index:        v1.0" in result.stdout
+        assert "Files:        0 indexed" in result.stdout

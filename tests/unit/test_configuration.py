@@ -8,6 +8,7 @@ import pytest
 from cii.core.configuration import (
     DEFAULT_EXCLUDED_DIRECTORIES,
     CiiConfig,
+    config_hash,
     load_config,
     parse_config,
     project_config_path,
@@ -106,3 +107,12 @@ class TestSaveProjectConfig:
         with config_path.open("rb") as handle:
             data = tomllib.load(handle)
         assert data["scan"]["hash_algorithm"] == "sha256"
+
+
+class TestConfigHash:
+    def test_deterministic(self) -> None:
+        assert config_hash(CiiConfig.defaults()) == config_hash(CiiConfig.defaults())
+
+    def test_changes_with_configuration(self) -> None:
+        changed = parse_config({"logging": {"level": "DEBUG"}})
+        assert config_hash(changed) != config_hash(CiiConfig.defaults())

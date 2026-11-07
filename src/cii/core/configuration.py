@@ -10,6 +10,7 @@ logging. Later milestones extend it as their subsystems land; every extension
 must add its defaults to the models *and* to ``config/default.toml``.
 """
 
+import hashlib
 import tomllib
 from pathlib import Path
 from typing import Any, Literal
@@ -194,3 +195,9 @@ def save_project_config(config: CiiConfig, project_root: Path) -> Path:
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(dump_toml(config.model_dump(mode="python")), encoding="utf-8")
     return config_path
+
+
+def config_hash(config: CiiConfig) -> str:
+    """Canonical fingerprint of an effective configuration (SHA-256 of its TOML)."""
+    canonical = dump_toml(config.model_dump(mode="python")).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()

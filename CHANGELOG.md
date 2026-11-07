@@ -4,6 +4,27 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [0.2.0] — 2026-11-07
+
+### Added — Milestone 02: Database
+
+- SQLite database at `<project>/.cii/cii.db` (WAL mode, enforced foreign keys,
+  busy timeout) with the full PLAN.md §6.2 schema: `projects`, `files`,
+  `symbols`, `namespaces`, `relationships`, `scan_history`,
+  `integrity_reports`, with indexes on searched columns.
+- Versioned schema migrations (`PRAGMA user_version`), applied atomically;
+  automatic backup of an existing database before upgrades.
+- Repository layer: project registration (idempotent by root), file
+  upsert/delete/lookup (incl. content-hash lookup for rename detection),
+  atomic per-file symbol replacement with parent-link resolution, namespace
+  declarations, evidence-backed relationships, scan history, integrity reports.
+- Nesting-safe savepoint transactions — a failed update cannot leave a
+  partially applied index.
+- Database health checks: integrity check, foreign-key violations, schema
+  version.
+- CLI: `cii init` now creates the database and registers the project;
+  new `cii status` command (human + `--json`).
+
 ## [0.1.0] — 2026-11-07
 
 ### Added — Milestone 01: Foundation
