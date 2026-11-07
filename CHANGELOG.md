@@ -4,6 +4,29 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [0.5.0] — 2026-11-07
+
+### Added — Milestone 05: Structural Indexer
+
+- Index pipeline (parse → register → relationships → export, PLAN.md §9.1):
+  per-file atomic indexing with `pending`/`failed` files picked up
+  automatically; parser failures retain the previous valid index (§8.4).
+- Identity-preserving symbol registration (`SymbolRepository.sync_for_file`):
+  unchanged symbols keep their `symbol_id` across reindexes, so relationships
+  from other files survive — verified by cross-file regression test.
+- Relationship construction from parser evidence only: `contains` (nesting),
+  `inherits`, `implements`; unresolved target names are counted and reported,
+  never fabricated (`calls`/`references` remain future work per §22.1).
+- Symbol counting derived from extracted symbols (§5.2 rules incl. record→class
+  and union→structure folding).
+- Markdown exporter: deterministic `.cii/CODEBASE_INDEX.md` (project
+  statistics, per-file counts, namespaces, classes, methods grouped by parent,
+  freshness timestamps; no source bodies), optional per-language split under
+  `.cii/indexes/`; unchanged output is not rewritten.
+- `Application` orchestration layer (`cii/application.py`) composing
+  scan → index → export; CLI `cii scan` now runs the full pipeline and
+  reports symbol deltas; new CLI `cii export`.
+
 ## [0.4.0] — 2026-11-07
 
 ### Added — Milestone 04: Parser Engine

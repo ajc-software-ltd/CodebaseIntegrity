@@ -121,7 +121,7 @@ class TestFileRepository:
 
 
 class TestSymbolRepository:
-    def test_replace_for_file_resolves_parents(self, database: Database, project) -> None:
+    def test_sync_for_file_resolves_parents(self, database: Database, project) -> None:
         files = FileRepository(database.connection)
         file_row = files.upsert(FileRow(
             project_id=project.project_id,
@@ -131,14 +131,14 @@ class TestSymbolRepository:
             language="cpp",
         ))
         repo = SymbolRepository(database.connection)
-        count = repo.replace_for_file(
+        ids = repo.sync_for_file(
             file_row.file_id,  # type: ignore[arg-type]
             [
                 _symbol("Renderer", "Renderer", symbol_type=SymbolType.CLASS),
                 _symbol("init", "Renderer::init", parent="Renderer"),
             ],
         )
-        assert count == 2
+        assert len(ids) == 2
         rows = repo.list_by_file(file_row.file_id)  # type: ignore[arg-type]
         assert [r.symbol_name for r in rows] == ["Renderer", "init"]
         assert rows[1].parent_symbol_id == rows[0].symbol_id
@@ -153,8 +153,8 @@ class TestSymbolRepository:
             language="cpp",
         ))
         repo = SymbolRepository(database.connection)
-        repo.replace_for_file(file_row.file_id, [_symbol("one", "one")])  # type: ignore[arg-type]
-        repo.replace_for_file(file_row.file_id, [_symbol("two", "two")])  # type: ignore[arg-type]
+        repo.sync_for_file(file_row.file_id, [_symbol("one", "one")])  # type: ignore[arg-type]
+        repo.sync_for_file(file_row.file_id, [_symbol("two", "two")])  # type: ignore[arg-type]
         rows = repo.list_by_file(file_row.file_id)  # type: ignore[arg-type]
         assert [r.symbol_name for r in rows] == ["two"]
 
@@ -168,7 +168,7 @@ class TestSymbolRepository:
             language="cpp",
         ))
         repo = SymbolRepository(database.connection)
-        repo.replace_for_file(file_row.file_id, [  # type: ignore[arg-type]
+        repo.sync_for_file(file_row.file_id, [  # type: ignore[arg-type]
             _symbol("init", "A::init", symbol_type=SymbolType.METHOD),
             _symbol("init", "B::init", symbol_type=SymbolType.METHOD),
         ])
@@ -188,9 +188,44 @@ class TestSymbolRepository:
             language="cpp",
         ))
         symbols = SymbolRepository(database.connection)
-        symbols.replace_for_file(file_row.file_id, [_symbol("one", "one")])  # type: ignore[arg-type]
+        symbols.sync_for_file(file_row.file_id, [_symbol("one", "one")])  # type: ignore[arg-type]
         files.delete(project.project_id, "src/a.cpp")
         assert symbols.list_by_file(file_row.file_id) == []  # type: ignore[arg-type]
+
+    def test_sync_preserves_symbol_ids_for_unchanged_symbols(
+        self, database: Database, project
+    ) -> None:
+        files = FileRepository(database.connection)
+        file_row = files.upsert(FileRow(
+            project_id=project.project_id,
+            relative_path="src/a.cpp",
+            filename="a.cpp",
+            extension=".cpp",
+            language="cpp",
+        ))
+        repo = SymbolRepository(database.connection)
+        first = repo.sync_for_file(file_row.file_id, [  # type: ignore[arg-type]
+            _symbol("Stable", "Stable", symbol_type=SymbolType.CLASS),
+            _symbol("mutating", "mutating", symbol_type=SymbolType.FUNCTION),
+        ])
+        before = {
+            row.fully_qualified_name: int(row.symbol_id)
+            for row in repo.list_by_file(file_row.file_id)  # type: ignore[arg-type]
+        }
+        second = repo.sync_for_file(file_row.file_id, [  # type: ignore[arg-type]
+            _symbol("Stable", "Stable", symbol_type=SymbolType.CLASS),
+            _symbol("mutating", "mutating", symbol_type=SymbolType.FUNCTION),
+            _symbol("added", "added", symbol_type=SymbolType.FUNCTION),
+        ])
+        after = {
+            row.fully_qualified_name: int(row.symbol_id)
+            for row in repo.list_by_file(file_row.file_id)  # type: ignore[arg-type]
+        }
+        assert after["Stable"] == before["Stable"]
+        assert after["mutating"] == before["mutating"]
+        assert after["added"] not in before.values()
+        assert set(second) == {"Stable", "mutating", "added"}
+        assert first != second
 
 
 class TestNamespaceRepository:
@@ -225,7 +260,7 @@ class TestRelationshipRepository:
             language="cpp",
         ))
         symbols = SymbolRepository(database.connection)
-        symbols.replace_for_file(file_row.file_id, [  # type: ignore[arg-type]
+        symbols.sync_for_file(file_row.file_id, [  # type: ignore[arg-type]
             _symbol("A", "A", symbol_type=SymbolType.CLASS),
             _symbol("B", "B", symbol_type=SymbolType.CLASS),
         ])

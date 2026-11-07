@@ -12,6 +12,7 @@ from typing import Annotated
 import typer
 
 from cii import INDEX_VERSION, __version__
+from cii.application import Application
 from cii.cli.output import render_config, to_json
 from cii.core.configuration import (
     CiiConfig,
@@ -23,7 +24,6 @@ from cii.core.configuration import (
 from cii.core.exceptions import CiiError
 from cii.database.database import DATABASE_FILE_NAME, Database
 from cii.database.repositories import FileRepository, ProjectRepository, SymbolRepository
-from cii.scanner.scanner import Scanner
 from cii.utilities.logging import setup_logging
 from cii.utilities.paths import cii_data_dir, resolve_project_root
 
@@ -199,7 +199,7 @@ def scan_command(
     ] = False,
     as_json: _JSON_OPTION = False,
 ) -> None:
-    """Scan the project and update the file index (incremental by default)."""
+    """Scan the project, index changed files, and refresh the Markdown index."""
     try:
         project_root = resolve_project_root(root)
         db_path = cii_data_dir(project_root) / DATABASE_FILE_NAME
@@ -210,44 +210,85 @@ def scan_command(
                 err=True,
             )
             raise typer.Exit(code=1)
-        config = load_config(project_root)
-        setup_logging(
-            level=config.logging.level,
-            console=not as_json,
-            log_dir=cii_data_dir(project_root) / "logs",
-        )
-        with Database.open(project_root) as database:
-            result = Scanner(project_root, config, database).scan(full=full)
+        with Application.open(project_root, configure_logging=True) as application:
+            outcome = application.scan(full=full)
 
-        changes = result.changes
+        changes = outcome.scan.changes
+        index = outcome.index
         payload = {
-            "scan_id": result.scan_id,
+            "scan_id": outcome.scan.scan_id,
             "mode": "full" if full else "incremental",
             "added": len(changes.added),
             "modified": len(changes.modified),
             "deleted": len(changes.deleted),
             "renamed": len(changes.renamed),
             "unchanged": changes.unchanged_count,
-            "hashed_files": result.hashed_files,
-            "hash_skips": result.hash_skips,
-            "skipped": result.discovery.model_dump(),
+            "hashed_files": outcome.scan.hashed_files,
+            "hash_skips": outcome.scan.hash_skips,
+            "files_indexed": index.files_indexed,
+            "files_failed": index.files_failed,
+            "symbols_added": index.symbols_added,
+            "symbols_updated": index.symbols_updated,
+            "symbols_removed": index.symbols_removed,
+            "relationships_unresolved": index.relationships_unresolved,
+            "exported": outcome.exported,
+            "skipped": outcome.scan.discovery.model_dump(),
         }
         if as_json:
             typer.echo(to_json(payload))
             return
-        typer.echo(f"Scan #{result.scan_id} ({payload['mode']}) complete")
+        typer.echo(f"Scan #{outcome.scan.scan_id} ({payload['mode']}) complete")
         typer.echo(f"  added:     {payload['added']}")
         typer.echo(f"  modified:  {payload['modified']}")
         typer.echo(f"  deleted:   {payload['deleted']}")
         typer.echo(f"  renamed:   {payload['renamed']}")
         typer.echo(f"  unchanged: {payload['unchanged']}")
-        skipped = result.discovery
+        typer.echo(
+            f"  indexed:   {index.files_indexed} file(s), "
+            f"+{index.symbols_added} ~{index.symbols_updated} -{index.symbols_removed} symbols"
+        )
+        if index.files_failed:
+            typer.echo(f"  FAILED:    {index.files_failed} file(s) (previous index retained)")
+        skipped = outcome.scan.discovery
         typer.echo(
             "  skipped:   "
             f"{skipped.unsupported_extension} unsupported, {skipped.too_large} too large, "
             f"{skipped.binary} binary, {skipped.generated} generated, "
             f"{skipped.symlink_skipped} symlinked"
         )
+        for path in outcome.exported:
+            typer.echo(f"  exported:  {path}")
+    except CiiError as error:
+        typer.secho(f"error: {error}", fg="red", err=True)
+        raise typer.Exit(code=1) from error
+
+
+@app.command("export")
+def export_command(
+    root: _ROOT_OPTION = Path("."),
+    as_json: _JSON_OPTION = False,
+) -> None:
+    """Regenerate CODEBASE_INDEX.md from the database."""
+    try:
+        project_root = resolve_project_root(root)
+        db_path = cii_data_dir(project_root) / DATABASE_FILE_NAME
+        if not db_path.is_file():
+            typer.secho(
+                f"error: CII is not initialised in {project_root} (run 'cii init')",
+                fg="red",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        with Application.open(project_root) as application:
+            written = application.export()
+        if as_json:
+            typer.echo(to_json({"exported": written}))
+            return
+        if written:
+            for path in written:
+                typer.echo(f"exported: {path}")
+        else:
+            typer.echo("index already up to date")
     except CiiError as error:
         typer.secho(f"error: {error}", fg="red", err=True)
         raise typer.Exit(code=1) from error

@@ -109,7 +109,7 @@ class TestScan:
         _write(path)
         scanner.scan()
         row = FileRepository(database.connection).get_by_path(project.project_id, "a.py")
-        SymbolRepository(database.connection).replace_for_file(
+        SymbolRepository(database.connection).sync_for_file(
             int(row.file_id),
             [SymbolInfo(
                 name="Widget",

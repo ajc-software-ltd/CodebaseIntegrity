@@ -88,7 +88,7 @@ class TestScan:
         result = runner.invoke(app, ["status", "--root", str(project_root), "--json"])
         payload = json.loads(result.stdout)
         assert payload["indexed_files"] == 1
-        assert payload["files_by_status"] == {"pending": 1}
+        assert payload["files_by_status"] == {"indexed": 1}
         assert payload["last_scan"] is not None
 
 

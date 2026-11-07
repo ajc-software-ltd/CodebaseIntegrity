@@ -2292,7 +2292,7 @@ their acceptance criteria have been executed and passed.
 | M02 — Database | 0.2.0 | **COMPLETE** (2026-11-07) | Create/open/query/validate executed on a persistent DB (clean-venv); 110 tests pass; ruff clean |
 | M03 — Scanner | 0.3.0 | **COMPLETE** (2026-11-07) | Discovery + change detection executed end-to-end (add/modify/rename/delete, exclusion, binary/generated skip); 154 tests pass; ruff clean |
 | M04 — Parser Engine | 0.4.0 | **COMPLETE** (2026-11-07) | Representative C++, C, C#, Python projects extracted accurately (clean-venv run verified); 198 tests pass; ruff clean |
-| M05 — Structural Indexer | 0.5.0 | pending | |
+| M05 — Structural Indexer | 0.5.0 | **COMPLETE** (2026-11-07) | Complete structural index generated from DB on multi-language project (clean-venv run verified); 224 tests pass; ruff clean |
 | M06 — Integrity Engine | 0.6.0 | pending | |
 | M07 — Incremental Monitoring | 0.7.0 | pending | |
 | M08 — Search and Retrieval | 0.8.0 | pending | |

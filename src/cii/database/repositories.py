@@ -218,19 +218,87 @@ class SymbolRepository:
     def __init__(self, connection: sqlite3.Connection) -> None:
         self._connection = connection
 
-    def replace_for_file(self, file_id: int, symbols: Sequence[SymbolInfo]) -> int:
-        """Atomically replace all symbols of one file.
+    def sync_for_file(self, file_id: int, symbols: Sequence[SymbolInfo]) -> dict[str, int]:
+        """Atomically bring a file's symbols in line with a parse result.
 
-        Previous rows for the file (and relationships that reference them)
-        are removed and the new set inserted inside a single transaction, so a
-        failed scan cannot corrupt the previous valid index. Parent links are
-        resolved by fully qualified name within the file. Returns the number
-        of symbols inserted.
+        Identity-preserving update (PLAN.md §5.4): a symbol whose (fully
+        qualified name, type, fingerprint) is unchanged keeps its ``symbol_id``,
+        so relationships from other files survive reindexing. Rows that match
+        by name and type but changed signature are updated in place; removed
+        symbols are deleted and new ones inserted — all inside one
+        transaction, so a failed scan cannot corrupt the previous index.
+
+        Parent links are resolved by fully qualified name within the file.
+        Returns the mapping of fully qualified name → symbol_id after sync.
         """
         with transaction(self._connection):
-            self._connection.execute("DELETE FROM symbols WHERE file_id = ?", (file_id,))
+            existing_rows = self.list_by_file(file_id)
+            existing_by_key: dict[tuple[str, str], list[SymbolRow]] = {}
+            for row in existing_rows:
+                key = (row.fully_qualified_name, row.symbol_type)
+                existing_by_key.setdefault(key, []).append(row)
+
+            kept_ids: list[int] = []
+            to_insert: list[SymbolInfo] = []
+            for symbol in symbols:
+                key = (symbol.fully_qualified_name, symbol.symbol_type.value)
+                candidates = existing_by_key.get(key, [])
+                exact = next(
+                    (row for row in candidates
+                     if row.fingerprint == symbol.fingerprint
+                     and int(row.symbol_id) not in kept_ids),
+                    None,
+                )
+                in_place = next(
+                    (row for row in candidates if int(row.symbol_id) not in kept_ids),
+                    None,
+                ) if exact is None else None
+                if exact is not None:
+                    self._connection.execute(
+                        "UPDATE symbols SET start_line = ?, end_line = ? WHERE symbol_id = ?",
+                        (symbol.start_line, symbol.end_line, int(exact.symbol_id)),
+                    )
+                    kept_ids.append(int(exact.symbol_id))
+                elif in_place is not None:
+                    self._connection.execute(
+                        "UPDATE symbols SET symbol_name = ?, signature = ?, "
+                        "fingerprint = ?, start_line = ?, end_line = ?, visibility = ? "
+                        "WHERE symbol_id = ?",
+                        (
+                            symbol.name,
+                            symbol.signature,
+                            symbol.fingerprint,
+                            symbol.start_line,
+                            symbol.end_line,
+                            symbol.visibility.value,
+                            int(in_place.symbol_id),
+                        ),
+                    )
+                    kept_ids.append(int(in_place.symbol_id))
+                else:
+                    to_insert.append(symbol)
+
+            placeholders = ", ".join("?" for _ in kept_ids) or "NULL"
+            if kept_ids:
+                self._connection.execute(
+                    f"DELETE FROM symbols WHERE file_id = ? AND symbol_id NOT IN ({placeholders})",
+                    (file_id, *kept_ids),
+                )
+            else:
+                self._connection.execute("DELETE FROM symbols WHERE file_id = ?", (file_id,))
+
             ids_by_fqn: dict[str, int] = {}
             for symbol in symbols:
+                key = (symbol.fully_qualified_name, symbol.symbol_type.value)
+                kept = next(
+                    (row for row in existing_by_key.get(key, [])
+                     if int(row.symbol_id) in kept_ids),
+                    None,
+                )
+                if kept is not None:
+                    ids_by_fqn[symbol.fully_qualified_name] = int(kept.symbol_id)
+
+            for symbol in to_insert:
                 cursor = self._connection.execute(
                     "INSERT INTO symbols (file_id, parent_symbol_id, symbol_name, "
                     "fully_qualified_name, symbol_type, visibility, signature, "
@@ -249,13 +317,14 @@ class SymbolRepository:
                     ),
                 )
                 ids_by_fqn[symbol.fully_qualified_name] = int(cursor.lastrowid)
+
             for symbol in symbols:
                 if symbol.parent and symbol.parent in ids_by_fqn:
                     self._connection.execute(
                         "UPDATE symbols SET parent_symbol_id = ? WHERE symbol_id = ?",
                         (ids_by_fqn[symbol.parent], ids_by_fqn[symbol.fully_qualified_name]),
                     )
-        return len(symbols)
+        return ids_by_fqn
 
     def list_by_file(self, file_id: int) -> list[SymbolRow]:
         rows = self._connection.execute(
@@ -301,6 +370,14 @@ class SymbolRepository:
             (project_id,),
         ).fetchone()
         return int(row[0])
+
+    def list_for_project(self, project_id: str) -> list[SymbolRow]:
+        rows = self._connection.execute(
+            "SELECT s.* FROM symbols s JOIN files f ON f.file_id = s.file_id "
+            "WHERE f.project_id = ? ORDER BY s.fully_qualified_name, s.symbol_id",
+            (project_id,),
+        ).fetchall()
+        return _map_all(SymbolRow, rows)
 
 
 class NamespaceRepository:
@@ -397,6 +474,21 @@ class RelationshipRepository:
         query += " ORDER BY relationship_id"
         rows = self._connection.execute(query, params).fetchall()
         return _map_all(RelationshipRow, rows)
+
+    def delete_sourced_in_file(self, file_id: int) -> int:
+        """Delete every relationship whose source symbol belongs to ``file_id``.
+
+        Used when a file is reindexed: its outgoing relationships (contains,
+        inherits, implements) are rebuilt from the fresh parse, while incoming
+        relationships from other files are preserved as long as their target
+        symbols keep their ids.
+        """
+        cursor = self._connection.execute(
+            "DELETE FROM relationships WHERE source_symbol_id IN "
+            "(SELECT symbol_id FROM symbols WHERE file_id = ?)",
+            (file_id,),
+        )
+        return cursor.rowcount
 
 
 class ScanHistoryRepository:

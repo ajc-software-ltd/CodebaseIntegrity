@@ -76,7 +76,8 @@ Milestone progress is tracked in PLAN.md §21 and the CHANGELOG.
 | M02 | Database (SQLite schema, repositories, migrations) | done |
 | M03 | Scanner (discovery, hashing, change detection) | done |
 | M04 | Parser engine (C, C++, C#, Python extraction) | done |
-| M05–M12 | Structural indexer → 1.0 release | pending |
+| M05 | Structural indexer (symbols, relationships, Markdown export) | done |
+| M06–M12 | Integrity engine → 1.0 release | pending |
 
 ## License
 
