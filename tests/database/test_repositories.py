@@ -4,9 +4,9 @@
 import pytest
 
 from cii.core.enums import Language, SymbolType
-from cii.core.models import SymbolInfo
+from cii.core.models import NamespaceInput, SymbolInfo
 from cii.database.database import Database
-from cii.database.models import FileRow, NamespaceInput
+from cii.database.models import FileRow
 from cii.database.repositories import (
     FileRepository,
     IntegrityReportRepository,

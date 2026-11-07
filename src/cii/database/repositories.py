@@ -16,11 +16,10 @@ import uuid
 from collections.abc import Sequence
 from typing import TypeVar
 
-from cii.core.models import SymbolInfo
+from cii.core.models import NamespaceInput, SymbolInfo
 from cii.database.models import (
     FileRow,
     IntegrityReportRow,
-    NamespaceInput,
     NamespaceRow,
     ProjectRow,
     RelationshipRow,

@@ -54,13 +54,6 @@ class NamespaceRow(BaseModel):
     parent_namespace_id: int | None = None
 
 
-class NamespaceInput(BaseModel):
-    """Input for namespace replacement: a declaration with a name-level parent."""
-
-    namespace_name: str = Field(min_length=1)
-    parent_name: str | None = None
-
-
 class RelationshipRow(BaseModel):
     relationship_id: int | None = None
     source_symbol_id: int

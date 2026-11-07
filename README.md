@@ -75,7 +75,8 @@ Milestone progress is tracked in PLAN.md §21 and the CHANGELOG.
 | M01 | Foundation (package, config, logging, core models, CLI) | done |
 | M02 | Database (SQLite schema, repositories, migrations) | done |
 | M03 | Scanner (discovery, hashing, change detection) | done |
-| M04–M12 | Parser engine → 1.0 release | pending |
+| M04 | Parser engine (C, C++, C#, Python extraction) | done |
+| M05–M12 | Structural indexer → 1.0 release | pending |
 
 ## License
 

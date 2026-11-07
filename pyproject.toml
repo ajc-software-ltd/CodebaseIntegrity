@@ -7,6 +7,10 @@ dynamic = ["version"]
 dependencies = [
     "pydantic>=2.7",
     "typer>=0.12",
+    "tree-sitter>=0.25",
+    "tree-sitter-c>=0.23",
+    "tree-sitter-cpp>=0.23",
+    "tree-sitter-c-sharp>=0.23",
 ]
 
 [project.scripts]
@@ -34,6 +38,9 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+# Parser fixtures contain deliberately representative (and deliberately
+# invalid) source samples — they are test data, not lint targets.
+exclude = ["tests/parsers/fixtures"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]

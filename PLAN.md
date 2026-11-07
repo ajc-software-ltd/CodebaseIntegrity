@@ -2291,7 +2291,7 @@ their acceptance criteria have been executed and passed.
 | M01 — Foundation | 0.1.0 | **COMPLETE** (2026-11-07) | Clean-venv install + `cii --version`/`init`/`config` executed; 74 unit tests pass; ruff clean |
 | M02 — Database | 0.2.0 | **COMPLETE** (2026-11-07) | Create/open/query/validate executed on a persistent DB (clean-venv); 110 tests pass; ruff clean |
 | M03 — Scanner | 0.3.0 | **COMPLETE** (2026-11-07) | Discovery + change detection executed end-to-end (add/modify/rename/delete, exclusion, binary/generated skip); 154 tests pass; ruff clean |
-| M04 — Parser Engine | 0.4.0 | pending | |
+| M04 — Parser Engine | 0.4.0 | **COMPLETE** (2026-11-07) | Representative C++, C, C#, Python projects extracted accurately (clean-venv run verified); 198 tests pass; ruff clean |
 | M05 — Structural Indexer | 0.5.0 | pending | |
 | M06 — Integrity Engine | 0.6.0 | pending | |
 | M07 — Incremental Monitoring | 0.7.0 | pending | |
@@ -2326,6 +2326,18 @@ Decisions taken where the specification left implementation details open:
    `tests/unit/test_default_config_sync.py`. Project overrides live in
    `.cii/config.toml` and are deep-merged per key.
 9. **Default max file size**: 2 MiB (`scan.max_file_size_bytes`), configurable.
+10. **M04 acceptance scope**: "accurately indexes" is satisfied at extraction
+    level (parser output); persistent DB indexing is the M05 indexer's
+    acceptance.
+11. **Symbol model scope**: fields, enum members and global variables are not
+    extracted (not in §5.1/§8.2 categories); `SymbolType` retains `field`/
+    `enum_member` for future use. Python modules are represented by file
+    records (no fabricated module symbol). C# `record` declarations map to
+    `SymbolType.record`, counted as classes in statistics.
+12. **Parser failure records** (§8.4): persisted via `files.scan_status` +
+    `parser_version` and detailed `ParseIssue` entries (path, parser, reason,
+    version, timestamp) surfaced through logs and reports; the schema stays as
+    specified in §6.2.
 
 ---
 

@@ -28,6 +28,7 @@ class SymbolType(StrEnum):
     CLASS = "class"
     STRUCT = "struct"
     INTERFACE = "interface"
+    RECORD = "record"
     ENUM = "enum"
     ENUM_MEMBER = "enum_member"
     FUNCTION = "function"

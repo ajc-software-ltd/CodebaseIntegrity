@@ -4,6 +4,38 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [0.4.0] — 2026-11-07
+
+### Added — Milestone 04: Parser Engine
+
+- Parser contract (`BaseParser` → `ParseResult`): uniform symbols, namespace
+  declarations, relationship references (evidence-based) and parse issues.
+- Tree-sitter integration (0.26) with lazy grammar registry for C, C++, C#.
+- C/C++ extraction: namespaces (nested + compact `a::b`), classes, structs,
+  unions, enums, functions (incl. overloads and declarations), methods,
+  constructors, destructors, templates, inheritance, access-modifier
+  visibility, typedefs (C).
+- C# extraction: namespaces (dotted + nested), classes, structs, interfaces,
+  records, enums, methods, constructors, properties, events, delegates,
+  base-list inherits/implements relationships, C# visibility defaults.
+- Python extraction (stdlib `ast`): classes with inheritance, functions,
+  methods, nested functions/classes, `__init__`/`__del__`, properties,
+  static/class methods, decorators in signatures, async functions.
+- Symbol fingerprints (SHA-256 of type + FQN + signature; line numbers
+  excluded from identity per PLAN.md §5.4).
+- Parser failure handling per §8.4: failures reported with reason/parser/
+  version/timestamp and never destroy previous index data; tolerant extraction
+  on trees with syntax-error nodes, with the errors reported as issues.
+- Parser registry with the v0.1 language set; representative C++, C, C#, and
+  Python fixtures with 43 parser tests.
+
+### Notes
+
+- Grammar API verified empirically (node types/fields differ from guesses:
+  `base_class_clause`/`base_list` are named children, not fields).
+- Fields, enum members and global variables are not extracted (outside the
+  §8.2 categories); Python modules are represented by file records.
+
 ## [0.3.0] — 2026-11-07
 
 ### Added — Milestone 03: Scanner

@@ -9,10 +9,23 @@ fully qualified name + symbol type + parent. Line numbers are navigational
 metadata only and never form part of identity.
 """
 
+import hashlib
+
 from pydantic import BaseModel, Field, field_validator
 
 from cii.core.enums import IntegrityStatus, Language, ScanStatus, SymbolType, Visibility
 from cii.utilities.paths import validate_relative_path
+
+
+class NamespaceInput(BaseModel):
+    """A namespace declaration extracted from one file (input for storage).
+
+    Used by the parser layer (extraction) and the database layer (persistence);
+    parent links are name-based and resolved at insertion time.
+    """
+
+    namespace_name: str = Field(min_length=1)
+    parent_name: str | None = None
 
 
 class SymbolCounts(BaseModel):
@@ -101,3 +114,15 @@ class IndexStatus(BaseModel):
     pending_files: int = Field(default=0, ge=0)
     failed_files: int = Field(default=0, ge=0)
     health: IntegrityStatus
+
+
+def symbol_fingerprint(symbol_type: SymbolType, fully_qualified_name: str,
+                       signature: str | None) -> str:
+    """Stable identity fingerprint for a symbol (PLAN.md §5.4).
+
+    SHA-256 over symbol type, fully qualified name and signature (when
+    available). Line numbers are deliberately excluded: they move when source
+    is edited and never form part of identity.
+    """
+    payload = f"{symbol_type.value}|{fully_qualified_name}|{signature or ''}"
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
