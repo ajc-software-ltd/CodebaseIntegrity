@@ -265,4 +265,6 @@ Changelog: [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT **with an additional restriction**: the code may not be sold or
+distributed commercially without prior written permission. Licensing
+requests: ajc200x@gmail.com — see [LICENSE](LICENSE).

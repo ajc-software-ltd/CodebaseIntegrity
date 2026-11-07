@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [1.0.2] — 2026-11-07
+
+### Changed
+
+- LICENSE: MIT with an additional restriction — the Software may not be sold
+  or distributed commercially without prior written permission
+  (licensing contact: ajc200x@gmail.com). `sell` removed from the MIT grant.
+
 ## [1.0.1] — 2026-11-07
 
 ### Added
