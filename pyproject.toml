@@ -3,6 +3,7 @@ name = "codebase-integrity"
 description = "Codebase Integrity & Intelligence (CII) — persistent structural index for AI coding agents"
 readme = "README.md"
 requires-python = ">=3.12"
+license = "MIT"
 dynamic = ["version"]
 dependencies = [
     "pydantic>=2.7",

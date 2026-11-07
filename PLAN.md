@@ -2305,8 +2305,8 @@ their acceptance criteria have been executed and passed.
 
 Decisions taken where the specification left implementation details open:
 
-1. **LICENSE**: not specified in PLAN.md — deferred to the project owner (M01
-   ships without a LICENSE file; README records the pending decision).
+1. **LICENSE**: not specified in PLAN.md — resolved 2026-11-07 by the project
+   owner: **MIT** (LICENSE file, `pyproject.toml` SPDX field).
 2. **`Namespaces` table semantics**: modelled as per-file namespace
    *declarations* (matching its field list); namespace identity across files is
    derived at query time (decision applied in M02).

@@ -87,4 +87,4 @@ Milestone progress is tracked in PLAN.md §21 and the CHANGELOG.
 
 ## License
 
-TBD — to be decided by the project owner.
+MIT — see [LICENSE](LICENSE).
