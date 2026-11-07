@@ -93,8 +93,9 @@ class TestIntegrationDoc:
 
     def test_explains_placement_and_no_global_assumption(self) -> None:
         text = DOC_PATH.read_text()
-        assert "project-level configuration" in text
-        assert "do not assume a global" in text.lower() or "Do not assume a global" in text
+        flat = " ".join(text.split())
+        assert "project-level configuration" in flat
+        assert "do not assume a global" in flat.lower()
 
 
 class TestOpenCodeConfigCommand:
