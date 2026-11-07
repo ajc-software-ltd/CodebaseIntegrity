@@ -4,6 +4,32 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [0.9.0] — 2026-11-07
+
+### Added — Milestone 09: MCP Server
+
+- MCP server on the official Python SDK **v2** (`MCPServer`, stdio
+  transport), served by `cii mcp`. Note: SDK v2 renamed FastMCP → MCPServer;
+  API verified against the official v2 migration guide and live package.
+- All nine tools per PLAN.md §12.1: `index_status`, `index_search`,
+  `index_file`, `index_symbol`, `index_scan` (synchronous, returns scan id +
+  status), `index_rebuild` (requires `confirm: true`; DB backup first,
+  previous index preserved until success), `index_validate`, 
+  `index_dependencies`, `index_statistics`.
+- Five read-only resources per §12.2: `cii://project/{status,index,
+  statistics,languages,configuration}` (JSON).
+- Input validation & security (§12.3): all path arguments validated and
+  confined to the project root (traversal rejected with structured errors);
+  no filesystem writes outside `.cii/`; no shell execution; destructive
+  maintenance gated behind explicit confirmation.
+- Structured `{"error": {type, message}}` tool payloads for CII errors;
+  unexpected failures are logged with traceback and returned as `internal`.
+- Thread-safe database access: MCP v2 runs sync handlers on worker threads —
+  `check_same_thread=False` + a reentrant lock serialising logical operations.
+- CLI: `cii mcp`, `cii rebuild`, `cii statistics`.
+- Tests: tool logic (25), in-process server, and a real external
+  `ClientSession` stdio round-trip exercising every documented operation.
+
 ## [0.8.0] — 2026-11-07
 
 ### Added — Milestone 08: Search and Retrieval

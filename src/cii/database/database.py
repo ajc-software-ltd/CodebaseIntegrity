@@ -5,12 +5,19 @@ store for the structural index (PLAN.md §6). Connections run in autocommit
 mode with explicit transactions (see :mod:`cii.database.transactions`), WAL
 journalling, and enforced foreign keys.
 
+MCP tool handlers execute on worker threads (MCP SDK v2), so the connection
+is opened with ``check_same_thread=False`` and every cross-thread operation
+runs under the database's reentrant lock (:meth:`Database.locked`) — one
+logical operation at a time, keeping savepoint transactions un-interleaved.
+
 A failed scan must never corrupt the previous valid index: writes are
 transactional, migrations are atomic, and :meth:`Database.health_check`
 exposes integrity state to callers.
 """
 
 import sqlite3
+import threading
+from contextlib import contextmanager
 from pathlib import Path
 
 from cii.core.exceptions import DatabaseError, PathSecurityError
@@ -28,6 +35,7 @@ class Database:
     def __init__(self, connection: sqlite3.Connection, path: Path) -> None:
         self._connection = connection
         self._path = path
+        self._lock = threading.RLock()
 
     @classmethod
     def open(cls, project_root: Path) -> "Database":
@@ -44,7 +52,9 @@ class Database:
         data_dir.mkdir(parents=True, exist_ok=True)
 
         try:
-            connection = sqlite3.connect(db_path, isolation_level=None)
+            connection = sqlite3.connect(
+                db_path, isolation_level=None, check_same_thread=False
+            )
             connection.row_factory = sqlite3.Row
             connection.execute(f"PRAGMA busy_timeout = {_BUSY_TIMEOUT_MS}")
             connection.execute("PRAGMA foreign_keys = ON")
@@ -67,6 +77,12 @@ class Database:
     @property
     def connection(self) -> sqlite3.Connection:
         return self._connection
+
+    @contextmanager
+    def locked(self):
+        """Serialize one logical operation across handler threads (reentrant)."""
+        with self._lock:
+            yield self
 
     def close(self) -> None:
         self._connection.close()

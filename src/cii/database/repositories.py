@@ -195,6 +195,13 @@ class FileRepository:
         )
         return cursor.rowcount > 0
 
+    def delete_all(self, project_id: str) -> int:
+        """Delete every file row of a project (cascades to symbols and namespaces)."""
+        cursor = self._connection.execute(
+            "DELETE FROM files WHERE project_id = ?", (project_id,)
+        )
+        return cursor.rowcount
+
     def find_by_content_hash(self, project_id: str, content_hash: str) -> list[FileRow]:
         """Find files by content fingerprint (rename/move detection)."""
         rows = self._connection.execute(

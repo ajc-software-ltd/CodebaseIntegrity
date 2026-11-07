@@ -25,6 +25,8 @@ from cii.core.exceptions import CiiError
 from cii.database.database import DATABASE_FILE_NAME, Database
 from cii.database.repositories import FileRepository, ProjectRepository, SymbolRepository
 from cii.integrity.validator import Validator
+from cii.mcp.server import serve
+from cii.mcp.tools import index_statistics
 from cii.monitoring.watcher import ProjectWatcher
 from cii.search.symbol_search import file_structure, search_symbols
 from cii.utilities.logging import setup_logging
@@ -504,6 +506,98 @@ def watch_command(
             f"{summary.batches_processed} event batch(es), "
             f"{summary.reconciliations} reconciliation(s)"
         )
+    except CiiError as error:
+        typer.secho(f"error: {error}", fg="red", err=True)
+        raise typer.Exit(code=1) from error
+
+
+@app.command("rebuild")
+def rebuild_command(
+    root: _ROOT_OPTION = Path("."),
+    as_json: _JSON_OPTION = False,
+) -> None:
+    """Rebuild the project index from scratch (previous DB is backed up)."""
+    try:
+        project_root = resolve_project_root(root)
+        db_path = cii_data_dir(project_root) / DATABASE_FILE_NAME
+        if not db_path.is_file():
+            typer.secho(
+                f"error: CII is not initialised in {project_root} (run 'cii init')",
+                fg="red",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        with Application.open(project_root, configure_logging=True) as application:
+            outcome = application.rebuild()
+        payload = {
+            "scan_id": outcome.scan.scan_id,
+            "backup_path": outcome.backup_path,
+            "files_indexed": outcome.index.files_indexed,
+            "symbols_added": outcome.index.symbols_added,
+            "exported": outcome.exported,
+        }
+        if as_json:
+            typer.echo(to_json(payload))
+            return
+        typer.echo(f"Rebuild complete (scan #{outcome.scan.scan_id})")
+        typer.echo(f"  files indexed:   {outcome.index.files_indexed}")
+        typer.echo(f"  symbols added:   {outcome.index.symbols_added}")
+        typer.echo(f"  backup:          {outcome.backup_path}")
+    except CiiError as error:
+        typer.secho(f"error: {error}", fg="red", err=True)
+        raise typer.Exit(code=1) from error
+
+
+@app.command("statistics")
+def statistics_command(
+    root: _ROOT_OPTION = Path("."),
+    as_json: _JSON_OPTION = False,
+) -> None:
+    """Display project structural statistics."""
+    try:
+        project_root = resolve_project_root(root)
+        db_path = cii_data_dir(project_root) / DATABASE_FILE_NAME
+        if not db_path.is_file():
+            typer.secho(
+                f"error: CII is not initialised in {project_root} (run 'cii init')",
+                fg="red",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        with Application.open(project_root) as application:
+            stats = index_statistics(application)
+        if as_json:
+            typer.echo(to_json(stats.model_dump(mode="json")))
+            return
+        typer.echo(f"Files:   {stats.total_files} ({', '.join(
+            f'{language}: {count}' for language, count in sorted(stats.files_by_language.items())
+        )})")
+        typer.echo(f"Symbols: {stats.total_symbols}")
+        for symbol_type, count in sorted(stats.symbols_by_type.items()):
+            typer.echo(f"  {symbol_type}: {count}")
+        typer.echo(f"Namespaces: {stats.namespaces}")
+        typer.echo(f"Parser failures: {stats.parser_failures}")
+    except CiiError as error:
+        typer.secho(f"error: {error}", fg="red", err=True)
+        raise typer.Exit(code=1) from error
+
+
+@app.command("mcp")
+def mcp_command(
+    root: _ROOT_OPTION = Path("."),
+) -> None:
+    """Start the CII MCP server on stdio transport."""
+    try:
+        project_root = resolve_project_root(root)
+        db_path = cii_data_dir(project_root) / DATABASE_FILE_NAME
+        if not db_path.is_file():
+            typer.secho(
+                f"error: CII is not initialised in {project_root} (run 'cii init')",
+                fg="red",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        serve(project_root)
     except CiiError as error:
         typer.secho(f"error: {error}", fg="red", err=True)
         raise typer.Exit(code=1) from error

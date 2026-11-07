@@ -27,6 +27,15 @@ class ScanOutcome(BaseModel):
     exported: list[str]
 
 
+class RebuildOutcome(BaseModel):
+    """Complete result of a full index rebuild."""
+
+    scan: ScanResult
+    index: IndexResult
+    backup_path: str
+    exported: list[str]
+
+
 class Application:
     """Entry point for CII operations on one project."""
 
@@ -76,30 +85,79 @@ class Application:
 
     def scan(self, *, full: bool = False) -> ScanOutcome:
         """Run a full scan-and-index cycle and refresh the Markdown index."""
-        scan_result = Scanner(self._project_root, self._config, self._database).scan(full=full)
-        index_result = Indexer(self._project_root, self._config, self._database).index_pending()
+        with self._database.locked():
+            scan_result = Scanner(self._project_root, self._config, self._database).scan(
+                full=full
+            )
+            index_result = Indexer(
+                self._project_root, self._config, self._database
+            ).index_pending()
         changes = scan_result.changes
         files_processed = (
             len(changes.added) + len(changes.modified) + len(changes.renamed)
             + changes.unchanged_count
         )
-        ScanHistoryRepository(self._database.connection).finish(
-            scan_result.scan_id,
-            files_processed=files_processed,
-            files_failed=index_result.files_failed,
-            symbols_added=index_result.symbols_added,
-            symbols_updated=index_result.symbols_updated,
-            symbols_removed=index_result.symbols_removed,
-            status="completed",
-        )
-        exported = [str(path) for path in export_index(
-            self._database, self._project_root, self._config
-        )]
+        with self._database.locked():
+            ScanHistoryRepository(self._database.connection).finish(
+                scan_result.scan_id,
+                files_processed=files_processed,
+                files_failed=index_result.files_failed,
+                symbols_added=index_result.symbols_added,
+                symbols_updated=index_result.symbols_updated,
+                symbols_removed=index_result.symbols_removed,
+                status="completed",
+            )
+            exported = [str(path) for path in export_index(
+                self._database, self._project_root, self._config
+            )]
         return ScanOutcome(scan=scan_result, index=index_result, exported=exported)
 
     def export(self) -> list[str]:
         """Regenerate the Markdown index from the current database state."""
-        return [
-            str(path)
-            for path in export_index(self._database, self._project_root, self._config)
-        ]
+        with self._database.locked():
+            return [
+                str(path)
+                for path in export_index(self._database, self._project_root, self._config)
+            ]
+
+    def rebuild(self) -> RebuildOutcome:
+        """Complete index rebuild (PLAN.md §12.1 tool 6, §18).
+
+        A backup copy of the database is written first, then the project's
+        index state is replaced and everything re-parsed inside one
+        transaction: if the replacement scan fails, the previous valid index
+        remains intact.
+        """
+        from cii.database.migrations import backup_database
+        from cii.database.repositories import FileRepository, ProjectRepository
+        from cii.database.transactions import transaction
+
+        project = ProjectRepository(self._database.connection).get_by_root(
+            str(self._project_root)
+        )
+        if project is None:
+            from cii.core.exceptions import ProjectRootError
+
+            raise ProjectRootError(
+                f"project not registered in CII: {self._project_root} (run 'cii init')"
+            )
+        backup = backup_database(
+            self._database.path, self._database.schema_version()
+        )
+        with transaction(self._database.connection):
+            FileRepository(self._database.connection).delete_all(project.project_id)
+            scan_result = Scanner(self._project_root, self._config, self._database).scan(
+                full=True
+            )
+            index_result = Indexer(
+                self._project_root, self._config, self._database
+            ).index_pending(force_all=True)
+        exported = [str(path) for path in export_index(
+            self._database, self._project_root, self._config
+        )]
+        return RebuildOutcome(
+            scan=scan_result,
+            index=index_result,
+            backup_path=str(backup),
+            exported=exported,
+        )

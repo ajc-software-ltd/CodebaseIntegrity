@@ -2296,7 +2296,7 @@ their acceptance criteria have been executed and passed.
 | M06 — Integrity Engine | 0.6.0 | **COMPLETE** (2026-11-07) | Discrepancies identified (unindexed/missing/changed/renamed/duplicates) with records provably uncorrupted (clean-venv run verified); 256 tests pass; ruff clean |
 | M07 — Incremental Monitoring | 0.7.0 | **COMPLETE** (2026-11-07) | Live watcher reflected concurrent add+delete automatically (clean-venv run verified); 281 tests pass incl. live inotify test; ruff clean |
 | M08 — Search and Retrieval | 0.8.0 | **COMPLETE** (2026-11-07) | §11.2 example reproduced (3 implementations located, paginated, clean-venv); 301 tests pass; ruff clean |
-| M09 — MCP Server | 0.9.0 | pending | |
+| M09 — MCP Server | 0.9.0 | **COMPLETE** (2026-11-07) | External MCP client connected via stdio and used all 9 tools + 5 resources (clean-venv run verified); 328 tests pass; ruff clean |
 | M10 — OpenCode Integration | 0.10.0 | pending | |
 | M11 — Automation Plugin | 0.11.0 | pending | |
 | M12 — Reliability and Release | 1.0.0 | pending | |
@@ -2347,6 +2347,12 @@ Decisions taken where the specification left implementation details open:
 14. **Namespace attribution in search results** (§11.3): derived from the
     file's namespace declarations as the longest fully qualified prefix of the
     symbol name — the `symbols` table keeps exactly the §6.2 field set.
+15. **MCP tool error policy** (§12.3): CII failures return structured
+    `{"error": {type, message}}` payloads instead of crashing the session;
+    unexpected failures are logged with traceback and surfaced as `internal`
+    errors. `index_scan` executes synchronously (decision 3). The server uses
+    the official SDK v2 (`MCPServer`); tool handlers run on worker threads and
+    database access is serialised by a reentrant lock.
 
 ---
 
