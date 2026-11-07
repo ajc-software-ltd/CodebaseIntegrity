@@ -4,6 +4,21 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [1.0.1] — 2026-11-07
+
+### Added
+
+- README: "Using CII with AI coding tools" — researched integration
+  instructions for tools with **official MCP support**: OpenCode, Claude Code,
+  Cursor, Windsurf, Cline, Goose, OpenHands (server registration + where each
+  tool reads the CII workflow rules). Aider and Plandex are excluded: neither
+  officially supports MCP.
+
+### Removed
+
+- README: milestone Status table (development complete; PLAN.md §21 remains
+  the milestone record).
+
 ## [1.0.0] — 2026-11-07
 
 ### Added — Milestone 12: Reliability and Release

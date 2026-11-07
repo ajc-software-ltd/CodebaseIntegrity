@@ -67,6 +67,106 @@ cii --version
 directory. Add `.cii/` to your project's `.gitignore` (the command prints a
 recommended entry).
 
+## Using CII with AI coding tools
+
+CII integrates through two portable mechanisms — its **MCP server** (`cii mcp`,
+which auto-discovers the nearest `.cii/` from its working directory) and the
+**workflow rules** in `integrations/opencode/AGENTS.md` (tool-agnostic text —
+copy it wherever your tool keeps instructions). Every tool below supports MCP
+natively; nothing requires third-party adapters. In directories without a CII
+index the tools answer "run cii init" instead of failing.
+
+OpenCode · Claude Code · Cursor · Windsurf · Cline · Goose · OpenHands
+
+### Claude Code
+
+```bash
+claude mcp add --transport stdio cii -- cii mcp      # add: --scope user for all projects
+```
+
+Project-shared alternative: `.mcp.json` in the project root:
+
+```json
+{ "mcpServers": { "cii": { "type": "stdio", "command": "cii", "args": ["mcp"] } } }
+```
+
+Claude Code reads `AGENTS.md` as project instructions when no `CLAUDE.md`
+exists (or import it from one). It also supports the CII skill and the
+read-only auditor natively: `skills/codebase-integrity/SKILL.md` and
+`agents/codebase-auditor.md` under `.claude/`.
+
+### Cursor
+
+Create `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global):
+
+```json
+{ "mcpServers": { "cii": { "command": "cii", "args": ["mcp"] } } }
+```
+
+Instructions: put the `integrations/opencode/AGENTS.md` rules in `AGENTS.md`
+at the project root (Cursor reads it automatically, including nested files),
+or use `.cursor/rules/*.mdc` for more control.
+
+### Windsurf
+
+Add under `mcpServers` in `~/.codeium/windsurf/mcp_config.json` (or use the
+MCP Marketplace / Settings → Cascade → MCP Servers):
+
+```json
+{ "mcpServers": { "cii": { "command": "cii", "args": ["mcp"] } } }
+```
+
+Instructions: `.windsurf/rules/*.md` (or `.windsurf/global_rules.md`) at the
+workspace root — drop the `integrations/opencode/AGENTS.md` content there.
+
+### Cline
+
+```bash
+cline mcp add cii --yes -- cii mcp
+```
+
+Or edit `~/.cline/data/settings/cline_mcp_settings.json` (same `mcpServers`
+shape as above). Instructions: Cline auto-detects a root `AGENTS.md` — or use
+`.clinerules/` / `.cline/rules/` directories.
+
+### Goose
+
+Add to `~/.config/goose/config.yaml` (or `goose configure` → Add Extension →
+Command-Line):
+
+```yaml
+extensions:
+  cii:
+    name: CII
+    type: stdio
+    cmd: cii
+    args: [mcp]
+    enabled: true
+    timeout: 300
+```
+
+Instructions: Goose reads `AGENTS.md` by default; `.goosehints` files
+(project, or global `~/.config/goose/.goosehints`) work too.
+
+### OpenHands
+
+In Agent Canvas: `Customize > MCP Servers` → `Add custom server` → type
+**STDIO**, Name `cii`, Command `cii`, Arguments `mcp` (saved in
+`~/.openhands/settings.json`; SDK users pass the equivalent `mcp_config`).
+Instructions: OpenHands loads the repository's `AGENTS.md` into the agent's
+context — put the CII rules there.
+
+### Portable tips
+
+- The CII MCP server's `instructions` reach most MCP clients automatically,
+  so the basic workflow survives even without rules files.
+- A root `AGENTS.md` carrying the five CII rules (Structural Discovery,
+  Source Verification, Duplicate Prevention, Post-Development, Failure)
+  serves every tool above; source it from `integrations/opencode/AGENTS.md`.
+- Keep the tool's text-only surface in mind: `cii scan` / `cii validate` work
+  as ordinary shell commands too, so tools without MCP can still use CII via
+  their terminal.
+
 ## How it works
 
 CII maintains one thing: a persistent **structural index** — the answer to
@@ -164,25 +264,6 @@ uv run ruff check src tests   # lint
 
 Project structure, milestones and acceptance criteria: [PLAN.md](PLAN.md).
 Changelog: [CHANGELOG.md](CHANGELOG.md).
-
-## Status
-
-Milestone progress is tracked in PLAN.md §21 and the CHANGELOG.
-
-| Milestone | Scope | State |
-|---|---|---|
-| M01 | Foundation (package, config, logging, core models, CLI) | done |
-| M02 | Database (SQLite schema, repositories, migrations) | done |
-| M03 | Scanner (discovery, hashing, change detection) | done |
-| M04 | Parser engine (C, C++, C#, Python extraction) | done |
-| M05 | Structural indexer (symbols, relationships, Markdown export) | done |
-| M06 | Integrity engine (validation, duplicates, reconciliation) | done |
-| M07 | Incremental monitoring (watcher, debounce, recovery) | done |
-| M08 | Search & retrieval (symbols, files, relationships, pagination) | done |
-| M09 | MCP server (9 tools, 5 resources, stdio) | done |
-| M10 | OpenCode integration (skill, auditor, config, live verification) | done |
-| M11 | Automation plugin (hooks, reminders, status tool, failure handling) | done |
-| M12 | Reliability & 1.0 release (recovery, security, benchmarks, docs, package) | done — v1.0.0 |
 
 ## License
 
