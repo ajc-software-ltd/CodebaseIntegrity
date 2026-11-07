@@ -55,6 +55,32 @@ DEFAULT_EXTENSIONS: dict[str, str] = {
     ".hxx": "cpp",
     ".cs": "csharp",
     ".py": "python",
+    ".js": "javascript",
+    ".mjs": "javascript",
+    ".cjs": "javascript",
+    ".ts": "typescript",
+    ".tsx": "typescript",
+    ".mts": "typescript",
+    ".cts": "typescript",
+    ".rs": "rust",
+    ".java": "java",
+    ".go": "go",
+    ".lua": "lua",
+    ".glsl": "glsl",
+    ".vert": "glsl",
+    ".frag": "glsl",
+    ".tesc": "glsl",
+    ".tese": "glsl",
+    ".geom": "glsl",
+    ".comp": "glsl",
+    ".hlsl": "hlsl",
+    ".fx": "hlsl",
+    ".fxh": "hlsl",
+    ".cmake": "cmake",
+}
+
+DEFAULT_FILENAMES: dict[str, str] = {
+    "CMakeLists.txt": "cmake",
 }
 
 
@@ -88,6 +114,8 @@ class LanguageSettings(BaseModel):
     model_config = {"extra": "forbid"}
 
     extensions: dict[str, str] = Field(default_factory=lambda: dict(DEFAULT_EXTENSIONS))
+    # exact file names mapped to a language (e.g. CMakeLists.txt).
+    filenames: dict[str, str] = Field(default_factory=lambda: dict(DEFAULT_FILENAMES))
 
     @field_validator("extensions")
     @classmethod
@@ -101,6 +129,17 @@ class LanguageSettings(BaseModel):
                 raise ValueError(f"unknown language {language!r} for extension {extension!r}")
             normalised[extension.lower()] = language
         return normalised
+
+    @field_validator("filenames")
+    @classmethod
+    def _validate_filenames(cls, value: dict[str, str]) -> dict[str, str]:
+        known_languages = {language.value for language in Language}
+        for filename, language in value.items():
+            if not filename or "/" in filename or "\\" in filename:
+                raise ValueError(f"filename must be a bare file name: {filename!r}")
+            if language not in known_languages:
+                raise ValueError(f"unknown language {language!r} for file {filename!r}")
+        return value
 
 
 class OutputSettings(BaseModel):

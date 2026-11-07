@@ -2,7 +2,7 @@
 
 `cii mcp` serves the CII tools over stdio using the official Python MCP SDK v2
 (`MCPServer`). Registered as a `local` server in OpenCode (`mcp.servers.cii` —
-see OPENCode_INTEGRATION.md). All responses are JSON.
+see OPENCODE_INTEGRATION.md). All responses are JSON.
 
 ## Tools (PLAN.md §12.1)
 

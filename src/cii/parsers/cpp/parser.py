@@ -38,8 +38,17 @@ _SEPARATOR = "::"
 _SUFFIXES = {
     Language.C: {".c"},
     Language.CPP: {".h", ".hh", ".hpp", ".hxx", ".cc", ".cpp", ".cxx"},
+    # GLSL/HLSL grammars produce C-shaped trees (translation_unit,
+    # struct_specifier, function_definition) and share this extractor.
+    Language.GLSL: {".glsl", ".vert", ".frag", ".tesc", ".tese", ".geom", ".comp"},
+    Language.HLSL: {".hlsl", ".fx", ".fxh"},
 }
-_PARSER_NAMES = {Language.C: "tree-sitter-c", Language.CPP: "tree-sitter-cpp"}
+_PARSER_NAMES = {
+    Language.C: "tree-sitter-c",
+    Language.CPP: "tree-sitter-cpp",
+    Language.GLSL: "tree-sitter-glsl",
+    Language.HLSL: "tree-sitter-hlsl",
+}
 
 _METHOD_NODES = {"declaration", "field_declaration", "function_definition"}
 _TYPE_NODES = {"class_specifier", "struct_specifier", "union_specifier", "enum_specifier"}

@@ -210,7 +210,7 @@ CodebaseIntegrity/
 │   ├── DATABASE_SCHEMA.md
 │   ├── MCP_INTERFACE.md
 │   ├── PARSER_SPECIFICATION.md
-│   ├── OPENCode_INTEGRATION.md
+│   ├── OPENCODE_INTEGRATION.md
 │   ├── SECURITY.md
 │   └── DEVELOPMENT_GUIDE.md
 │

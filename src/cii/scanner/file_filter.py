@@ -53,10 +53,13 @@ class FileFilter:
         return False
 
     def classify(self, path: Path) -> Language | None:
-        """Classify a file by extension; None when the extension is unsupported.
+        """Classify a file by exact file name first, then by extension.
 
-        Extension matching is case-insensitive.
+        Both are case-insensitive; None means the file is unsupported.
         """
+        by_name = self._languages.filenames.get(path.name)
+        if by_name is not None:
+            return Language(by_name)
         language = self._languages.extensions.get(path.suffix.lower())
         return Language(language) if language is not None else None
 

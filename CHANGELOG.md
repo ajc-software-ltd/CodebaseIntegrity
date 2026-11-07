@@ -123,7 +123,7 @@ the release boundaries defined in PLAN.md §21.
   MCP registration snippet with resolved paths (python `-m cii` launcher;
   no global-executable assumption) plus placement explanation — it never
   edits OpenCode configuration itself.
-- `docs/OPENCode_INTEGRATION.md`: complete install/verify guide with the
+- `docs/OPENCODE_INTEGRATION.md`: complete install/verify guide with the
   verified `mcp.servers` v2 snippet.
 
 ### Verified (live, OpenCode v2.2.5)

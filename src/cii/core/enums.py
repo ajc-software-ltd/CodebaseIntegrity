@@ -10,14 +10,22 @@ from enum import StrEnum
 class Language(StrEnum):
     """Programming languages supported by the index (v0.1 scope).
 
-    Additional languages (GLSL, HLSL, CMake, Lua, JavaScript, TypeScript,
-    Rust, Java, Go) are planned; parsers arrive with their implementation.
+    All PLAN.md sec 8.2-8.3 languages are implemented.
     """
 
     C = "c"
     CPP = "cpp"
     CSHARP = "csharp"
     PYTHON = "python"
+    JAVASCRIPT = "javascript"
+    TYPESCRIPT = "typescript"
+    RUST = "rust"
+    JAVA = "java"
+    GO = "go"
+    LUA = "lua"
+    GLSL = "glsl"
+    HLSL = "hlsl"
+    CMAKE = "cmake"
     UNKNOWN = "unknown"
 
 

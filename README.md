@@ -8,7 +8,6 @@ duplicating functionality, or breaking established components.
 **The LLM decides what to build. CII establishes what already exists. The
 source code remains the ultimate authority.**
 
-See [PLAN.md](PLAN.md) for the full engineering specification.
 
 ## What CII records
 
@@ -233,7 +232,7 @@ cii init   →   cii scan   →   [code changes]   →   cii scan   →   cii va
 ### How AI agents consume it
 
 Register the MCP server once per project (see
-[docs/OPENCode_INTEGRATION.md](docs/OPENCode_INTEGRATION.md)); the agent then
+[docs/OPENCODE_INTEGRATION.md](docs/OPENCODE_INTEGRATION.md)); the agent then
 gets tools like `index_search`, `index_file`, `index_scan`, `index_validate`.
 With the bundled `codebase-integrity` skill, a coding task flows like this:
 
@@ -262,7 +261,6 @@ uv run pytest            # run the test suite
 uv run ruff check src tests   # lint
 ```
 
-Project structure, milestones and acceptance criteria: [PLAN.md](PLAN.md).
 Changelog: [CHANGELOG.md](CHANGELOG.md).
 
 ## License

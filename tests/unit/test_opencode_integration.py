@@ -13,7 +13,7 @@ INTEGRATIONS = REPO_ROOT / "integrations" / "opencode"
 SKILL_PATH = INTEGRATIONS / "skills" / "codebase-integrity" / "SKILL.md"
 AGENT_PATH = INTEGRATIONS / "agents" / "codebase-auditor.md"
 AGENTS_MD_PATH = INTEGRATIONS / "AGENTS.md"
-DOC_PATH = REPO_ROOT / "docs" / "OPENCode_INTEGRATION.md"
+DOC_PATH = REPO_ROOT / "docs" / "OPENCODE_INTEGRATION.md"
 
 runner = CliRunner()
 
