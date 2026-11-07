@@ -30,10 +30,12 @@ Add it to the project-level configuration of the project you want indexed
 
 Notes:
 
-- The snippet deliberately uses an **absolute path to the project's virtual
-  environment** (or `python -m cii mcp`) — do not assume a global `cii`
-  executable exists. `cii opencode-config` prints the exact command for the
-  current machine.
+- With a global install (`uv tool install --editable .` from the CII
+  repository) the command is simply `["cii", "mcp", "--root", "/path/to/project"]`.
+- Without one, the snippet deliberately uses an **absolute path to the
+  project's virtual environment** (or `python -m cii mcp`) — do not assume a
+  global `cii` executable exists. `cii opencode-config` prints the exact
+  command for the current machine.
 - Run `cii init` in the project first; the server refuses uninitialised
   projects.
 - Configuration changes apply without restarting OpenCode.

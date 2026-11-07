@@ -4,6 +4,7 @@
 
 ```bash
 uv sync                       # installs runtime + dev dependencies
+uv tool install --editable .  # optional: OS-wide `cii` command (~/.local/bin)
 uv run pytest                 # test suite
 uv run ruff check src tests   # lint (line length 100, py312)
 ```

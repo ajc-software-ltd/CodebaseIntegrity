@@ -34,13 +34,25 @@ the agent can retrieve the actual source.
 
 Requires Python 3.12+.
 
+**OS-wide `cii` command (recommended):**
+
 ```bash
-git clone <this repository>
+git clone https://github.com/ajc-software-ltd/CodebaseIntegrity
 cd CodebaseIntegrity
+uv tool install --editable .     # installs `cii` into ~/.local/bin
+```
+
+This makes `cii` available in every terminal (CachyOS/Arch: `~/.local/bin` is
+on the default PATH). The editable install reflects source updates
+immediately. Remove with `uv tool uninstall codebase-integrity`.
+
+**Project-local (development):**
+
+```bash
 uv sync            # or: pip install -e .
 ```
 
-This installs the `cii` command into the environment.
+This installs `cii` into the project's `.venv` only (`uv run cii …`).
 
 ## Quick start
 

@@ -43,6 +43,12 @@ the release boundaries defined in PLAN.md §21.
   tree-sitter grammars support Windows) but this is unverified — remaining
   risk, see PLAN.md §26.1 item 17.
 
+### Installation
+
+- OS-level `cii` command documented and verified on CachyOS:
+  `uv tool install --editable .` installs `cii` into `~/.local/bin`
+  (verified: `cii --version` / `init` / `status` from a clean login shell).
+
 ## [0.11.0] — 2026-11-07
 
 ### Added — Milestone 11: Automation and Plugin
