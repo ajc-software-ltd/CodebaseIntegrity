@@ -2299,7 +2299,7 @@ their acceptance criteria have been executed and passed.
 | M09 — MCP Server | 0.9.0 | **COMPLETE** (2026-11-07) | External MCP client connected via stdio and used all 9 tools + 5 resources (clean-venv run verified); 328 tests pass; ruff clean |
 | M10 — OpenCode Integration | 0.10.0 | **COMPLETE** (2026-11-07) | Live OpenCode v2.2.5: server connected, tools discovered, MiMo workflow executed end-to-end (skill → status → scan → search → source); 337 tests pass; ruff clean |
 | M11 — Automation Plugin | 0.11.0 | **COMPLETE** (2026-11-07) | Live plugin: cii_status tool + injected reminders verified; failure handling verified; MCP independence retained; 343 tests pass; ruff clean |
-| M12 — Reliability and Release | 1.0.0 | pending | |
+| M12 — Reliability and Release | 1.0.0 | **COMPLETE** (2026-11-07) | §20.5 acceptance (18 steps) + auditor + recovery + benchmarks + wheel install verified on Linux; Windows install NOT RUN (no host — item 17); 351 tests pass; ruff clean |
 
 ## 26.1 Resolved specification ambiguities
 
@@ -2358,6 +2358,13 @@ Decisions taken where the specification left implementation details open:
     command dispatch (`/cii-audit`) relies on OpenCode's TUI command facility —
     registration and executor are tested, headless dispatch is not observable
     via `opencode run`.
+17. **Windows verification** (§3.2, §21 M12): Windows installation and
+    execution are **NOT RUN** — no Windows host was available during
+    development. The implementation is platform-neutral by construction
+    (pathlib, os.scandir, stdlib sqlite3, cross-platform watchfiles and
+    tree-sitter wheels), but a Windows run of `scripts/verify_installation.py`
+    and the test suite remains outstanding before Windows support can be
+    claimed.
 
 ---
 

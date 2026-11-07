@@ -145,10 +145,14 @@ def apply_migrations(
     a backup copy is written first.
 
     Raises:
-        MigrationError: the database is newer than this build understands, or
-            a migration failed (the database is left at its previous version).
+        MigrationError: the database is newer than this build understands, is
+            unreadable/corrupt, or a migration failed (the database is left at
+            its previous version).
     """
-    current = schema_version(connection)
+    try:
+        current = schema_version(connection)
+    except sqlite3.Error as error:
+        raise MigrationError(f"database is unreadable or corrupt: {error}") from error
     if current > SCHEMA_VERSION:
         raise MigrationError(
             f"database schema version {current} is newer than supported {SCHEMA_VERSION}"

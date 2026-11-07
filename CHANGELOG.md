@@ -4,6 +4,45 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [1.0.0] — 2026-11-07
+
+### Added — Milestone 12: Reliability and Release
+
+- Reliability test suite (PLAN.md §18): rebuild-from-source recovery after
+  database loss, corrupt-database reporting (clear CII error, never silent
+  wipe, never raw driver crash), backup-before-migration, break-then-fix
+  parser failure recovery, failed-parse symbol retention.
+- Security regression suite (§19): `.env`/secret files never opened or
+  indexed (classification gate), out-of-root files never indexed, byte-level
+  proof that scan/validate/rebuild never modify source files.
+- `scripts/verify_installation.py` — end-to-end installation verification
+  (version → init → scan → search → validate → export → status).
+- `scripts/development.py benchmark` — synthetic multi-language benchmark
+  (1000 files / 5000 symbols): all §17.1 targets met (status 4.7 ms,
+  lookup 3.5 ms, search 3.4 ms; see docs/DEVELOPMENT_GUIDE.md).
+- Completed documentation set: ARCHITECTURE, DATABASE_SCHEMA, MCP_INTERFACE,
+  PARSER_SPECIFICATION, SECURITY, DEVELOPMENT_GUIDE.
+- Release package: `uv build` (wheel + sdist); clean-venv wheel install
+  verified — all installation checks pass.
+
+### Verified
+
+- The complete §20.5 acceptance scenario passed end-to-end (18 steps):
+  multi-language scan, incremental reindexing, class addition, file deletion,
+  duplicate detection, live OpenCode + MiMo locating an existing method,
+  extending the existing class with **zero duplicates** (independently
+  confirmed), index updated after development, accurate final validation.
+- The `codebase-auditor` subagent ran live: symbol-by-symbol comparison
+  against source, HEALTHY verdict in the specified report format.
+- Definition of Done (PLAN.md §24) satisfied on Linux.
+
+### Known limitations
+
+- **Windows installation: NOT RUN** (no Windows host available). The code is
+  platform-neutral (pathlib/os.scandir/stdlib sqlite3; watchfiles and the
+  tree-sitter grammars support Windows) but this is unverified — remaining
+  risk, see PLAN.md §26.1 item 17.
+
 ## [0.11.0] — 2026-11-07
 
 ### Added — Milestone 11: Automation and Plugin
