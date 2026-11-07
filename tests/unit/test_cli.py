@@ -178,3 +178,37 @@ class TestSearchCommand:
         assert runner.invoke(app, ["init", "--root", str(project_root)]).exit_code == 0
         result = runner.invoke(app, ["file", "missing.py", "--root", str(project_root)])
         assert result.exit_code == 1
+
+
+class TestMcpRootResolution:
+    def test_explicit_root(self, project_root: Path) -> None:
+        from cii.cli.commands import _resolve_mcp_root
+
+        assert _resolve_mcp_root(project_root) == project_root.resolve()
+
+    def test_discovers_nearest_cii_from_subdirectory(self, project_root: Path) -> None:
+        from cii.cli.commands import _resolve_mcp_root
+
+        (project_root / ".cii").mkdir()
+        nested = project_root / "src" / "deep"
+        nested.mkdir(parents=True)
+        import os
+
+        previous = Path.cwd()
+        try:
+            os.chdir(nested)
+            assert _resolve_mcp_root(None) == project_root.resolve()
+        finally:
+            os.chdir(previous)
+
+    def test_falls_back_to_cwd_when_uninitialised(self, tmp_path: Path) -> None:
+        import os
+
+        from cii.cli.commands import _resolve_mcp_root
+
+        previous = Path.cwd()
+        try:
+            os.chdir(tmp_path)
+            assert _resolve_mcp_root(None) == tmp_path.resolve()
+        finally:
+            os.chdir(previous)

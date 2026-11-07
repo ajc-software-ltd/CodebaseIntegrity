@@ -584,22 +584,32 @@ def statistics_command(
         raise typer.Exit(code=1) from error
 
 
+def _resolve_mcp_root(root: Path | None) -> Path:
+    """Resolve the project root for the MCP server.
+
+    An explicit ``--root`` is used as given; otherwise the nearest enclosing
+    project with a ``.cii`` directory is discovered from the working
+    directory (local MCP servers start in the OpenCode workspace). When
+    nothing is discovered the working directory is used and the server runs
+    degraded: tools answer with a structured "run cii init" error.
+    """
+    if root is not None:
+        return resolve_project_root(root)
+    from cii.utilities.paths import find_project_root
+
+    return find_project_root(Path.cwd()) or Path.cwd().resolve()
+
+
 @app.command("mcp")
 def mcp_command(
-    root: _ROOT_OPTION = Path("."),
+    root: Annotated[
+        Path | None,
+        typer.Option("--root", help="Project root (default: discover the nearest .cii)."),
+    ] = None,
 ) -> None:
     """Start the CII MCP server on stdio transport."""
     try:
-        project_root = resolve_project_root(root)
-        db_path = cii_data_dir(project_root) / DATABASE_FILE_NAME
-        if not db_path.is_file():
-            typer.secho(
-                f"error: CII is not initialised in {project_root} (run 'cii init')",
-                fg="red",
-                err=True,
-            )
-            raise typer.Exit(code=1)
-        serve(project_root)
+        serve(_resolve_mcp_root(root))
     except CiiError as error:
         typer.secho(f"error: {error}", fg="red", err=True)
         raise typer.Exit(code=1) from error

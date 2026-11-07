@@ -44,6 +44,10 @@ where). The index is advisory evidence: the source code remains the authority.
     unresolved findings (duplicates, stale entries) instead of silently fixing
     or ignoring them.
 
+For substantial changes, additionally delegate an independent integrity audit
+to the `codebase-auditor` subagent (read-only, fresh context) and evaluate its
+findings before completing.
+
 ## Tool summary
 
 | Tool | Purpose |

@@ -124,3 +124,27 @@ class TestServerResources:
         assert "python" in languages["supported"]
         config = read("cii://project/configuration")
         assert config["scan"]["hash_algorithm"] == "sha256"
+
+
+class TestDegradedUninitialisedServer:
+    def test_tools_return_initialise_error_without_app(self, project_root: Path) -> None:
+        """A server built for an uninitialised project must start and answer
+        every tool with a structured error (global registration safety)."""
+        mcp = build_server(None, project_root=project_root)
+        for name, args in [
+            ("index_status", {}),
+            ("index_search", {"query": "x"}),
+            ("index_scan", {}),
+            ("index_validate", {}),
+            ("index_statistics", {}),
+        ]:
+            result = _call(mcp, name, args)
+            assert "error" in result, name
+            assert "cii init" in result["error"]["message"], name
+
+    def test_resources_return_error_without_app(self, project_root: Path) -> None:
+        mcp = build_server(None, project_root=project_root)
+        result = asyncio.run(mcp.read_resource("cii://project/status"))
+        contents = result.contents if hasattr(result, "contents") else result
+        payload = json.loads(contents[0].content)
+        assert "cii init" in payload["error"]["message"]

@@ -52,8 +52,14 @@ class TestAuditorAgent:
         fields = _frontmatter(text)
         assert fields["mode"] == "subagent"
         assert fields["description"]
-        assert "- action: edit" in text and "effect: deny" in text
-        assert "- action: shell" in text
+        # deny-all first, then allow only read-only capabilities
+        assert '- action: "*"' in text and "effect: deny" in text
+        assert text.index('action: "*"') < text.index("cii_index_search")
+        for read_only in ["cii_index_status", "cii_index_search", "cii_index_validate"]:
+            assert f"- action: {read_only}" in text
+        # mutation tools must never be explicitly allowed (the "*" deny covers them)
+        assert "cii_index_scan" not in text
+        assert "cii_index_rebuild" not in text
 
     def test_covers_required_responsibilities(self) -> None:
         body = AGENT_PATH.read_text()
