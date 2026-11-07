@@ -104,6 +104,35 @@ def _write_if_changed(path: Path, content: str) -> bool:
     return True
 
 
+def is_index_current(
+    database: Database, project_root: Path, config: CiiConfig
+) -> bool | None:
+    """Check whether the generated Markdown matches the database.
+
+    Returns True when current, False when out of date, None when the index
+    file does not exist. Timestamp lines are ignored: only structural content
+    is compared (deterministic).
+    """
+    index_path = project_root / ".cii" / INDEX_FILE_NAME
+    if not index_path.is_file():
+        return None
+    project = ProjectRepository(database.connection).get_by_root(str(project_root))
+    if project is None:
+        return None
+    files = FileRepository(database.connection).list_all(project.project_id)
+    rendered = _render_document(database, project.project_name, project.index_version, files)
+    return _strip_timestamps(rendered) == _strip_timestamps(
+        index_path.read_text(encoding="utf-8")
+    )
+
+
+def _strip_timestamps(text: str) -> str:
+    return "\n".join(
+        line for line in text.splitlines()
+        if not line.startswith(("LAST_UPDATED:", "LAST_SCANNED:"))
+    )
+
+
 def _collect_file_data(database: Database, file_row: FileRow) -> _FileRenderData:
     symbol_repo = SymbolRepository(database.connection)
     namespace_repo = NamespaceRepository(database.connection)

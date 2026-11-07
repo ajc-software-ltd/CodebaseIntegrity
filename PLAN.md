@@ -2293,7 +2293,7 @@ their acceptance criteria have been executed and passed.
 | M03 — Scanner | 0.3.0 | **COMPLETE** (2026-11-07) | Discovery + change detection executed end-to-end (add/modify/rename/delete, exclusion, binary/generated skip); 154 tests pass; ruff clean |
 | M04 — Parser Engine | 0.4.0 | **COMPLETE** (2026-11-07) | Representative C++, C, C#, Python projects extracted accurately (clean-venv run verified); 198 tests pass; ruff clean |
 | M05 — Structural Indexer | 0.5.0 | **COMPLETE** (2026-11-07) | Complete structural index generated from DB on multi-language project (clean-venv run verified); 224 tests pass; ruff clean |
-| M06 — Integrity Engine | 0.6.0 | pending | |
+| M06 — Integrity Engine | 0.6.0 | **COMPLETE** (2026-11-07) | Discrepancies identified (unindexed/missing/changed/renamed/duplicates) with records provably uncorrupted (clean-venv run verified); 256 tests pass; ruff clean |
 | M07 — Incremental Monitoring | 0.7.0 | pending | |
 | M08 — Search and Retrieval | 0.8.0 | pending | |
 | M09 — MCP Server | 0.9.0 | pending | |
@@ -2338,6 +2338,12 @@ Decisions taken where the specification left implementation details open:
     `parser_version` and detailed `ParseIssue` entries (path, parser, reason,
     version, timestamp) surfaced through logs and reports; the schema stays as
     specified in §6.2.
+13. **Duplicate-detection policy** (§10.4) and status precedence (§10.2):
+    header/source pairs, overloads and C# partial classes are legitimate;
+    identical definitions in multiple sources = ERROR; conflicting type shapes
+    = WARNING; Python duplicates are compared within files only (file-local
+    FQNs). Integrity status precedence: ERROR > INCOMPLETE > STALE > WARNING >
+    HEALTHY (FAILED when validation itself cannot complete).
 
 ---
 

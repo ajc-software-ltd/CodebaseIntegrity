@@ -4,6 +4,30 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [0.6.0] — 2026-11-07
+
+### Added — Milestone 06: Integrity Engine
+
+- Read-only integrity validation (PLAN.md §10): deterministic findings, no LLM
+  interpretation, never modifies source files or index records (verified by
+  snapshot test and clean-venv run).
+- Filesystem ↔ database reconciliation (reusing hash-based change detection,
+  never trusting timestamps): unindexed / missing / changed-hash / renamed.
+- Duplicate declaration detection (§10.4) distinguishing legitimate patterns:
+  header/source declaration-definition pairs, overloads, C# partial classes;
+  identical definitions in multiple sources = ERROR, conflicting type shapes =
+  WARNING; Python cross-file comparisons excluded (file-local FQNs).
+- Database consistency checks: SQLite integrity, foreign-key violations,
+  schema version, failed/pending/unsupported file states, cross-file parent
+  invariants.
+- Full-scan validation: re-parses indexed files and reports symbol drift
+  (`missing_symbols` / `new_symbols`) and unresolved relationship targets.
+- Generated-Markdown freshness check (timestamp-insensitive comparison).
+- Integrity status per §10.2 with documented precedence (ERROR > INCOMPLETE >
+  STALE > WARNING > HEALTHY; FAILED on validation failure); persisted
+  `integrity_reports` rows.
+- CLI: `cii validate` / `cii validate --full` (human + `--json`).
+
 ## [0.5.0] — 2026-11-07
 
 ### Added — Milestone 05: Structural Indexer

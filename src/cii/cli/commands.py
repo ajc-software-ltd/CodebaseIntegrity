@@ -24,6 +24,7 @@ from cii.core.configuration import (
 from cii.core.exceptions import CiiError
 from cii.database.database import DATABASE_FILE_NAME, Database
 from cii.database.repositories import FileRepository, ProjectRepository, SymbolRepository
+from cii.integrity.validator import Validator
 from cii.utilities.logging import setup_logging
 from cii.utilities.paths import cii_data_dir, resolve_project_root
 
@@ -289,6 +290,54 @@ def export_command(
                 typer.echo(f"exported: {path}")
         else:
             typer.echo("index already up to date")
+    except CiiError as error:
+        typer.secho(f"error: {error}", fg="red", err=True)
+        raise typer.Exit(code=1) from error
+
+
+@app.command("validate")
+def validate_command(
+    root: _ROOT_OPTION = Path("."),
+    full: Annotated[
+        bool,
+        typer.Option("--full", help="Re-parse files and compare symbols with the index."),
+    ] = False,
+    as_json: _JSON_OPTION = False,
+) -> None:
+    """Validate index integrity against the filesystem (read-only)."""
+    try:
+        project_root = resolve_project_root(root)
+        db_path = cii_data_dir(project_root) / DATABASE_FILE_NAME
+        if not db_path.is_file():
+            typer.secho(
+                f"error: CII is not initialised in {project_root} (run 'cii init')",
+                fg="red",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        with Application.open(project_root) as application:
+            summary = Validator(
+                project_root, application.config, application.database
+            ).validate(full_scan=full)
+
+        payload = {
+            "status": summary.status.value,
+            "errors": summary.errors,
+            "warnings": summary.warnings,
+            "files_checked": summary.files_checked,
+            "full_scan": summary.full_scan,
+            "findings": [finding.model_dump(mode="json") for finding in summary.findings],
+        }
+        if as_json:
+            typer.echo(to_json(payload))
+            return
+        typer.echo(f"Integrity: {summary.status.value.upper()}")
+        typer.echo(f"Files checked: {summary.files_checked}")
+        typer.echo(f"Errors: {summary.errors}  Warnings: {summary.warnings}")
+        for finding in summary.findings:
+            location = f" [{finding.file_path}]" if finding.file_path else ""
+            typer.echo(f"  {finding.severity.value.upper()} {finding.code}{location}")
+            typer.echo(f"    {finding.message}")
     except CiiError as error:
         typer.secho(f"error: {error}", fg="red", err=True)
         raise typer.Exit(code=1) from error

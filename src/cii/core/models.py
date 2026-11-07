@@ -13,7 +13,14 @@ import hashlib
 
 from pydantic import BaseModel, Field, field_validator
 
-from cii.core.enums import IntegrityStatus, Language, ScanStatus, SymbolType, Visibility
+from cii.core.enums import (
+    FindingSeverity,
+    IntegrityStatus,
+    Language,
+    ScanStatus,
+    SymbolType,
+    Visibility,
+)
 from cii.utilities.paths import validate_relative_path
 
 
@@ -126,3 +133,17 @@ def symbol_fingerprint(symbol_type: SymbolType, fully_qualified_name: str,
     """
     payload = f"{symbol_type.value}|{fully_qualified_name}|{signature or ''}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+class IntegrityFinding(BaseModel):
+    """One discrepancy discovered by validation (PLAN.md §10.1).
+
+    Findings are evidence for investigation — validation never modifies
+    source code or index records.
+    """
+
+    code: str
+    severity: FindingSeverity
+    message: str
+    file_path: str | None = None
+    symbol: str | None = None

@@ -83,3 +83,10 @@ class RelationshipType(StrEnum):
     CALLS = "calls"
     REFERENCES = "references"
     DECLARES = "declares"
+
+
+class FindingSeverity(StrEnum):
+    """Severity of an integrity finding (maps to error/warning counts)."""
+
+    ERROR = "error"
+    WARNING = "warning"
