@@ -4,6 +4,30 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [0.3.0] — 2026-11-07
+
+### Added — Milestone 03: Scanner
+
+- Project file discovery with configurable directory exclusions/inclusions,
+  extension→language classification, max file size, binary detection
+  (NUL-byte sniff), and conservative generated-file detection.
+- Symlink policy: skipped by default; followed only when configured **and**
+  resolving inside the project root; deterministic ancestor-chain cycle
+  detection (path-based indexing preserved).
+- Streaming SHA-256 content fingerprints (chunked, never loads whole files).
+- Change detection: added / modified / deleted / renamed (hash-matched
+  one-to-one) / unchanged, with content hashes as the authority and a
+  size+mtime fast path for incremental scans (`--full` re-hashes everything).
+- Transactional scan persistence: renames preserve `file_id` and any indexed
+  symbols; failed scans leave the previous index intact; scan-history records
+  per cycle.
+- CLI: `cii scan` / `cii scan --full` (human + `--json`).
+
+### Fixed
+
+- `FileRepository.upsert` now updates `relative_path` when keyed by `file_id`
+  (required for rename handling; caught by integration test).
+
 ## [0.2.0] — 2026-11-07
 
 ### Added — Milestone 02: Database

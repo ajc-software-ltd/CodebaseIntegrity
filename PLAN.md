@@ -2290,7 +2290,7 @@ their acceptance criteria have been executed and passed.
 |---|---|---|---|
 | M01 — Foundation | 0.1.0 | **COMPLETE** (2026-11-07) | Clean-venv install + `cii --version`/`init`/`config` executed; 74 unit tests pass; ruff clean |
 | M02 — Database | 0.2.0 | **COMPLETE** (2026-11-07) | Create/open/query/validate executed on a persistent DB (clean-venv); 110 tests pass; ruff clean |
-| M03 — Scanner | 0.3.0 | pending | |
+| M03 — Scanner | 0.3.0 | **COMPLETE** (2026-11-07) | Discovery + change detection executed end-to-end (add/modify/rename/delete, exclusion, binary/generated skip); 154 tests pass; ruff clean |
 | M04 — Parser Engine | 0.4.0 | pending | |
 | M05 — Structural Indexer | 0.5.0 | pending | |
 | M06 — Integrity Engine | 0.6.0 | pending | |

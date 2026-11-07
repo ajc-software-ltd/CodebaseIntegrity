@@ -58,6 +58,40 @@ class TestInit:
         assert "error:" in result.output
 
 
+class TestScan:
+    def test_scan_requires_init(self, project_root: Path) -> None:
+        result = runner.invoke(app, ["scan", "--root", str(project_root)])
+        assert result.exit_code == 1
+        combined = result.output + (getattr(result, "stderr", "") or "")
+        assert "not initialised" in combined
+
+    def test_scan_updates_index(self, project_root: Path) -> None:
+        assert runner.invoke(app, ["init", "--root", str(project_root)]).exit_code == 0
+        (project_root / "a.py").write_text("x = 1\n")
+        result = runner.invoke(app, ["scan", "--root", str(project_root), "--json"])
+        assert result.exit_code == 0
+        payload = json.loads(result.stdout)
+        assert payload["added"] == 1
+        assert payload["mode"] == "incremental"
+
+        result = runner.invoke(
+            app, ["scan", "--root", str(project_root), "--full", "--json"]
+        )
+        payload = json.loads(result.stdout)
+        assert payload["mode"] == "full"
+        assert payload["unchanged"] == 1
+
+    def test_status_reflects_scanned_files(self, project_root: Path) -> None:
+        assert runner.invoke(app, ["init", "--root", str(project_root)]).exit_code == 0
+        (project_root / "a.py").write_text("x = 1\n")
+        assert runner.invoke(app, ["scan", "--root", str(project_root)]).exit_code == 0
+        result = runner.invoke(app, ["status", "--root", str(project_root), "--json"])
+        payload = json.loads(result.stdout)
+        assert payload["indexed_files"] == 1
+        assert payload["files_by_status"] == {"pending": 1}
+        assert payload["last_scan"] is not None
+
+
 class TestConfig:
     def test_shows_defaults(self, project_root: Path) -> None:
         result = runner.invoke(app, ["config", "--root", str(project_root)])

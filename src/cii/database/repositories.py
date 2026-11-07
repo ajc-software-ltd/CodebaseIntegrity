@@ -116,15 +116,23 @@ class FileRepository:
         self._connection = connection
 
     def upsert(self, row: FileRow) -> FileRow:
-        """Insert or update a file record (keyed by project + relative path)."""
+        """Insert or update a file record.
+
+        Keyed by ``file_id`` when provided (path-preserving updates such as
+        renames), otherwise by (project, relative path).
+        """
         with transaction(self._connection):
-            existing = self.get_by_path(row.project_id, row.relative_path)
+            if row.file_id is not None:
+                existing = self._get_by_id(row.file_id)
+            else:
+                existing = self.get_by_path(row.project_id, row.relative_path)
             if existing is not None and existing.file_id is not None:
                 self._connection.execute(
-                    "UPDATE files SET filename = ?, extension = ?, language = ?, "
-                    "content_hash = ?, file_size = ?, modified_at = ?, last_scanned = ?, "
-                    "scan_status = ?, parser_version = ? WHERE file_id = ?",
+                    "UPDATE files SET relative_path = ?, filename = ?, extension = ?, "
+                    "language = ?, content_hash = ?, file_size = ?, modified_at = ?, "
+                    "last_scanned = ?, scan_status = ?, parser_version = ? WHERE file_id = ?",
                     (
+                        row.relative_path,
                         row.filename,
                         row.extension,
                         row.language,
