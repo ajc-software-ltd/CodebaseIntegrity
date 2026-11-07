@@ -1,0 +1,46 @@
+# CII default configuration (reference copy).
+#
+# This file mirrors the built-in defaults defined in src/cii/core/configuration.py.
+# A unit test (tests/unit/test_default_config_sync.py) keeps the two in sync:
+# every value here must equal the code default.
+#
+# Project-level overrides belong in <project-root>/.cii/config.toml.
+# Generate one with `cii init` and edit it as needed.
+
+[project]
+# Project display name. Empty string means "derive from the project directory name".
+name = ""
+
+[scan]
+# Directory names excluded from discovery (matched per path component).
+excluded_directories = [".git", ".cii", ".venv", "venv", "node_modules", "__pycache__", ".cache", "build", "dist", "out", "bin", "obj", "cmake-build-debug", "cmake-build-release", "generated", "third_party", "vendor"]
+# Directories that are scanned even if they are inside an excluded directory.
+included_directories = []
+# Files larger than this are skipped (bytes).
+max_file_size_bytes = 2097152
+# Never follow symbolic links that resolve outside the project root.
+follow_symlinks = false
+# Skip files that look generated (marker comments, codegen headers).
+detect_generated_files = true
+# Content fingerprint algorithm used for change detection.
+hash_algorithm = "sha256"
+
+[languages]
+# File extension -> language identifier. Extensions are matched case-insensitively.
+extensions = {".c" = "c", ".h" = "cpp", ".cc" = "cpp", ".cpp" = "cpp", ".cxx" = "cpp", ".hh" = "cpp", ".hpp" = "cpp", ".hxx" = "cpp", ".cs" = "csharp", ".py" = "python"}
+
+[output]
+# Generate .cii/CODEBASE_INDEX.md from the database after scans.
+markdown_index = true
+# Additionally generate per-language indexes under .cii/indexes/.
+split_by_language = false
+# Whether the generated Markdown index may be committed to version control.
+commit_index = false
+
+[logging]
+# Minimum log level: DEBUG, INFO, WARNING, ERROR, CRITICAL.
+level = "INFO"
+# Write log output to the console (stderr).
+console = true
+# Write log output to .cii/logs/cii.log.
+file = true

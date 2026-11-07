@@ -2281,4 +2281,52 @@ The LLM decides what to build. CII establishes what already exists. The source c
 
 ---
 
+# 26. Development Progress
+
+Maintained by the implementing agent. Milestones are marked complete only after
+their acceptance criteria have been executed and passed.
+
+| Milestone | Version | Status | Evidence |
+|---|---|---|---|
+| M01 — Foundation | 0.1.0 | **COMPLETE** (2026-11-07) | Clean-venv install + `cii --version`/`init`/`config` executed; 74 unit tests pass; ruff clean |
+| M02 — Database | 0.2.0 | pending | |
+| M03 — Scanner | 0.3.0 | pending | |
+| M04 — Parser Engine | 0.4.0 | pending | |
+| M05 — Structural Indexer | 0.5.0 | pending | |
+| M06 — Integrity Engine | 0.6.0 | pending | |
+| M07 — Incremental Monitoring | 0.7.0 | pending | |
+| M08 — Search and Retrieval | 0.8.0 | pending | |
+| M09 — MCP Server | 0.9.0 | pending | |
+| M10 — OpenCode Integration | 0.10.0 | pending | |
+| M11 — Automation Plugin | 0.11.0 | pending | |
+| M12 — Reliability and Release | 1.0.0 | pending | |
+
+## 26.1 Resolved specification ambiguities
+
+Decisions taken where the specification left implementation details open:
+
+1. **LICENSE**: not specified in PLAN.md — deferred to the project owner (M01
+   ships without a LICENSE file; README records the pending decision).
+2. **`Namespaces` table semantics**: modelled as per-file namespace
+   *declarations* (matching its field list); namespace identity across files is
+   derived at query time (decision applied in M02).
+3. **`index_scan` tool semantics**: executes the scan synchronously and returns
+   the ScanHistory identifier plus final status (applied in M09).
+4. **Clang/Roslyn analyzers** (`cpp/clang_analyzer.py`, `csharp/roslyn_analyzer.py`)
+   and `core/events.py`: listed in the repository structure but not required by
+   any milestone acceptance criterion — implemented only when a milestone needs
+   them. v1.0 scope is Tree-sitter/AST extraction (§8.2 "when needed").
+5. **`Files.scan_status` values**: `pending`, `indexed`, `failed`, `unsupported`.
+6. **Header language ambiguity** (`.h`): defaults to `cpp`, configurable via
+   `[languages].extensions`.
+7. **`cii init` and VCS**: never edits user files (e.g. `.gitignore`); prints
+   recommended entries instead.
+8. **Configuration defaults source**: built-in Pydantic defaults are
+   authoritative; `config/default.toml` is a reference copy enforced in sync by
+   `tests/unit/test_default_config_sync.py`. Project overrides live in
+   `.cii/config.toml` and are deep-merged per key.
+9. **Default max file size**: 2 MiB (`scan.max_file_size_bytes`), configurable.
+
+---
+
 # END OF PLAN.md
