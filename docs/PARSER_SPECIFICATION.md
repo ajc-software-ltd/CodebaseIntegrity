@@ -57,6 +57,16 @@ what is structurally clear, and every such parse records an issue
 ("N syntax error node(s)") which surfaces in scan output and validation.
 Python `SyntaxError` fails the parse entirely (`ok=False`).
 
+## Extended language set (v1.0.3)
+
+JavaScript, TypeScript, Rust, Java, Go, Lua and CMake run through the
+spec-driven extractor (`cii/parsers/treesitter/generic.py` + `specs.py`):
+Go receiver methods, Rust `impl`/`trait` blocks, Lua `M.go`/`M:stop` names,
+CMake `function()`/`macro()` definitions, Java/Go packages, JS/TS
+constructors and heritage evidence. GLSL and HLSL reuse the C-family
+extractor (C-shaped grammars). JSON, XML and TXT are tracked for **presence**
+with zero symbols — data formats have no structure to extract.
+
 ## Extending
 
 Register another `BaseParser` in `cii.parsers.registry.default_registry` —

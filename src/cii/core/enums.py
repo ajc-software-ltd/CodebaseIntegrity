@@ -26,6 +26,9 @@ class Language(StrEnum):
     GLSL = "glsl"
     HLSL = "hlsl"
     CMAKE = "cmake"
+    JSON = "json"
+    XML = "xml"
+    TEXT = "text"
     UNKNOWN = "unknown"
 
 

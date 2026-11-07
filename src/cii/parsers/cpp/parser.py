@@ -93,7 +93,7 @@ class CFamilyParser(BaseParser):
         try:
             content = file_path.read_bytes()
             tree = load_parser(self._language).parse(content)
-        except (OSError, ValueError) as error:
+        except Exception as error:  # grammar/IO failures are reported, never fatal
             return self._failure(relative_path, parser_version, f"read/parse failed: {error}")
 
         issues: list[ParseIssue] = []

@@ -12,7 +12,8 @@ from cii.core.enums import Language, RelationshipType, SymbolType, Visibility
 from cii.core.models import symbol_fingerprint  # noqa: F401  (re-export convenience)
 from cii.parsers.base import SymbolReference
 from cii.parsers.treesitter.generic import ExtractSpec
-from cii.parsers.treesitter.parser import field as node_field, node_text
+from cii.parsers.treesitter.parser import field as node_field
+from cii.parsers.treesitter.parser import node_text
 
 
 def _split_types(text: str) -> list[str]:
@@ -144,7 +145,9 @@ def _lua_name(node: tree_sitter.Node):
 def _cmake_name(node: tree_sitter.Node):
     for child in node.named_children:
         if child.type in ("function_command", "macro_command"):
-            arguments = node_field(child, "argument_list")
+            arguments = next(
+                (c for c in child.named_children if c.type == "argument_list"), None
+            )
             if arguments is not None and arguments.named_children:
                 first = arguments.named_children[0]
                 return node_text(first).strip(), None, SymbolType.FUNCTION
@@ -171,7 +174,7 @@ TS = ExtractSpec(
     separator=".",
     parser_name="tree-sitter-typescript",
     grammar_package="tree-sitter-typescript",
-    namespace_nodes={"internal_module": "nested_identifier"},
+    namespace_nodes={"internal_module": ("name", "nested_identifier")},
     expand_namespace_dots=True,
     type_nodes={
         "class_declaration": SymbolType.CLASS,
@@ -184,6 +187,9 @@ TS = ExtractSpec(
         "function_declaration": SymbolType.FUNCTION,
         "generator_function_declaration": SymbolType.FUNCTION,
         "method_definition": SymbolType.METHOD,
+        "method_signature": SymbolType.METHOD,
+        "abstract_method_signature": SymbolType.METHOD,
+        "property_signature": SymbolType.PROPERTY,
     },
     constructor_names=frozenset({"constructor"}),
     transparent_nodes=frozenset({"export_statement", "expression_statement"}),
@@ -195,7 +201,7 @@ RUST = ExtractSpec(
     separator="::",
     parser_name="tree-sitter-rust",
     grammar_package="tree-sitter-rust",
-    namespace_nodes={"mod_item": "identifier"},
+    namespace_nodes={"mod_item": ("name", "identifier")},
     type_nodes={
         "struct_item": SymbolType.STRUCT,
         "enum_item": SymbolType.ENUM,
@@ -215,7 +221,7 @@ JAVA = ExtractSpec(
     separator=".",
     parser_name="tree-sitter-java",
     grammar_package="tree-sitter-java",
-    namespace_nodes={"package_declaration": "scoped_identifier"},
+    namespace_nodes={"package_declaration": (None, "scoped_identifier")},
     expand_namespace_dots=True,
     type_nodes={
         "class_declaration": SymbolType.CLASS,
@@ -238,7 +244,7 @@ GO = ExtractSpec(
     separator=".",
     parser_name="tree-sitter-go",
     grammar_package="tree-sitter-go",
-    namespace_nodes={"package_clause": "package_identifier"},
+    namespace_nodes={"package_clause": (None, "package_identifier")},
     type_nodes={"type_spec": SymbolType.STRUCT},
     type_kind_hook=_go_type_kind,
     function_nodes={

@@ -56,7 +56,7 @@ class TestParseConfig:
 
     def test_unknown_language_rejected(self) -> None:
         with pytest.raises(ConfigurationError):
-            parse_config({"languages": {"extensions": {".rs": "rust"}}})
+            parse_config({"languages": {"extensions": {".xyz": "klingon"}}})
 
     def test_extension_without_dot_rejected(self) -> None:
         with pytest.raises(ConfigurationError):

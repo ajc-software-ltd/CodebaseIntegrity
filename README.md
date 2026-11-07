@@ -22,7 +22,9 @@ the agent can retrieve the actual source.
 ## Features
 
 - Persistent SQLite structural index per project (`<project>/.cii/cii.db`).
-- Multi-language symbol extraction (C, C++, C#, Python first).
+- Multi-language symbol extraction — 16 languages: C, C++, C#, Python,
+  JavaScript, TypeScript, Rust, Java, Go, Lua, GLSL, HLSL, CMake, plus
+  data-file tracking (JSON, XML, TXT).
 - Incremental scanning with content-hash change detection.
 - Integrity validation: stale records, missing files, duplicate declarations.
 - Fast structural search through a local MCP server for OpenCode v2.

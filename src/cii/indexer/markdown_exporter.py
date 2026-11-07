@@ -46,6 +46,18 @@ _LANGUAGE_LABELS = {
     "cpp": "C++",
     "csharp": "C#",
     "python": "Python",
+    "javascript": "JavaScript",
+    "typescript": "TypeScript",
+    "rust": "Rust",
+    "java": "Java",
+    "go": "Go",
+    "lua": "Lua",
+    "glsl": "GLSL",
+    "hlsl": "HLSL",
+    "cmake": "CMake",
+    "json": "JSON",
+    "xml": "XML",
+    "text": "Plain Text",
     "unknown": "Unknown",
 }
 

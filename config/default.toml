@@ -27,7 +27,9 @@ hash_algorithm = "sha256"
 
 [languages]
 # File extension -> language identifier. Extensions are matched case-insensitively.
-extensions = {".c" = "c", ".h" = "cpp", ".cc" = "cpp", ".cpp" = "cpp", ".cxx" = "cpp", ".hh" = "cpp", ".hpp" = "cpp", ".hxx" = "cpp", ".cs" = "csharp", ".py" = "python"}
+extensions = {".c" = "c", ".h" = "cpp", ".cc" = "cpp", ".cpp" = "cpp", ".cxx" = "cpp", ".hh" = "cpp", ".hpp" = "cpp", ".hxx" = "cpp", ".cs" = "csharp", ".py" = "python", ".js" = "javascript", ".mjs" = "javascript", ".cjs" = "javascript", ".ts" = "typescript", ".tsx" = "typescript", ".mts" = "typescript", ".cts" = "typescript", ".rs" = "rust", ".java" = "java", ".go" = "go", ".lua" = "lua", ".glsl" = "glsl", ".vert" = "glsl", ".frag" = "glsl", ".tesc" = "glsl", ".tese" = "glsl", ".geom" = "glsl", ".comp" = "glsl", ".hlsl" = "hlsl", ".fx" = "hlsl", ".fxh" = "hlsl", ".cmake" = "cmake", ".json" = "json", ".jsonl" = "json", ".xml" = "xml", ".txt" = "text"}
+# Exact file names mapped to a language (case-insensitive).
+filenames = {"CMakeLists.txt" = "cmake"}
 
 [output]
 # Generate .cii/CODEBASE_INDEX.md from the database after scans.

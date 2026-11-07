@@ -77,6 +77,10 @@ DEFAULT_EXTENSIONS: dict[str, str] = {
     ".fx": "hlsl",
     ".fxh": "hlsl",
     ".cmake": "cmake",
+    ".json": "json",
+    ".jsonl": "json",
+    ".xml": "xml",
+    ".txt": "text",
 }
 
 DEFAULT_FILENAMES: dict[str, str] = {

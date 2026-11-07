@@ -4,6 +4,29 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [1.0.3] — 2026-11-07
+
+### Added
+
+- Nine new languages (PLAN.md §8.3 complete): **GLSL, HLSL, CMake, Lua,
+  JavaScript, TypeScript, Rust, Java, Go** — verified against live grammars
+  and example files of every type. GLSL/HLSL reuse the C-family extractor;
+  the rest run through a new spec-driven tree-sitter extractor (Go receivers,
+  Rust impl/trait blocks, Lua dotted/colon methods, CMake function/macro
+  defs, Java/Go packages, JS/TS constructors and heritage).
+- Data-file tracking: **JSON, XML, TXT** (and .jsonl) are now indexed for
+  presence with zero structural symbols — honest indexing, healthy validation.
+- `CMakeLists.txt` recognised by exact file name (scanner + registry).
+- 16 languages total; per-language example fixtures with extraction tests.
+
+### Fixed
+
+- Nested functions keep type `function` under function parents (only type
+  parents promote to methods/constructors).
+- Single-segment package declarations (`package app;`) scope the file.
+- Missing grammar packages are reported as a failed file instead of crashing
+  the scan.
+
 ## [1.0.2] — 2026-11-07
 
 ### Changed
