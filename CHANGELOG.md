@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [1.0.4] — 2026-11-08
+
+### Added
+
+- README: OpenCode installation instructions (MCP registration, skill,
+  auditor, AGENTS.md) placed above the Claude Code section.
+
 ## [1.0.3] — 2026-11-07
 
 ### Added

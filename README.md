@@ -79,6 +79,21 @@ index the tools answer "run cii init" instead of failing.
 
 OpenCode · Claude Code · Cursor · Windsurf · Cline · Goose · OpenHands
 
+### OpenCode
+
+Full guide: [docs/OPENCODE_INTEGRATION.md](docs/OPENCODE_INTEGRATION.md).
+
+```bash
+opencode mcp add cii --global -- cii mcp     # one auto-discovering server for all projects
+cp -r integrations/opencode/skills/codebase-integrity ~/.config/opencode/skills/
+cp integrations/opencode/agents/codebase-auditor.md ~/.config/opencode/agents/
+```
+
+Instructions: add the rules from `integrations/opencode/AGENTS.md` to
+`~/.config/opencode/AGENTS.md` (hot-reloads into running sessions). The
+auditor is a read-only subagent your primary agent delegates integrity
+audits to; the server's own instructions reach every session automatically.
+
 ### Claude Code
 
 ```bash
