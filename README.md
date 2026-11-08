@@ -285,3 +285,11 @@ Changelog: [CHANGELOG.md](CHANGELOG.md).
 MIT **with an additional restriction**: the code may not be sold or
 distributed commercially without prior written permission. Licensing
 requests: ajc200x@gmail.com — see [LICENSE](LICENSE).
+
+---
+
+<sub>**Platform note:** This project has not been tested in a Windows-OS
+environment. It has been designed for Linux — intentionally. Feel free to set
+it up and test it operationally on Windows, but the project author will not
+document or test in a Windows environment on principle: he does not like the
+Windows operating system.</sub>

@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); milestones are
 the release boundaries defined in PLAN.md §21.
 
+## [1.0.5] — 2026-11-08
+
+### Added
+
+- README footnote: Windows is untested and undocumented by author policy;
+  the project is intentionally Linux-designed, community Windows testing
+  welcome.
+
 ## [1.0.4] — 2026-11-08
 
 ### Added
